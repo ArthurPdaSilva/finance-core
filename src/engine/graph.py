@@ -1,11 +1,11 @@
 import sqlite3
-from typing import TypedDict, List, Any
+from typing import Any, List, TypedDict
 
-from langgraph.graph import StateGraph
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.graph import StateGraph
 
-from src.engine.agents import search_finance
+from engine.agents import search_finance
 
 
 class State(TypedDict):
@@ -17,7 +17,6 @@ class State(TypedDict):
 class EngineGraph:
     def __init__(self):
         self.llm = ChatOpenAI(model="gpt-4o-mini")
-
 
     def retrieve_node(self, state: State):
         docs = search_finance(state["question"])

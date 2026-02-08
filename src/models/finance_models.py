@@ -1,7 +1,8 @@
-from sqlalchemy import  Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
+
 
 class Usuario(Base):
     __tablename__ = "usuarios"
@@ -19,6 +20,7 @@ class ContaMensal(Base):
     valor = Column(Float, nullable=False)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
 
+
 class Divida(Base):
     __tablename__ = "dividas"
 
@@ -28,5 +30,3 @@ class Divida(Base):
     parcelas_restantes = Column(Integer, nullable=False)
     valor_por_parcela = Column(Float, nullable=True)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
-
-

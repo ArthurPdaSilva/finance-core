@@ -16,8 +16,7 @@
 
 # Iniciar a aplicação
 
-from src.engine.graph import EngineGraph
-
+from engine.graph import EngineGraph
 
 engine = EngineGraph()
 graph = engine.build_graph()
@@ -28,8 +27,8 @@ resp = graph.invoke(
         "question": "Qual o total que pago em aluguel, meu lindo",
     },
     config={
-        "thread_id": "arthur-thread"   # pode ser qualquer string
-    }
+        "thread_id": "arthur-thread"  # pode ser qualquer string
+    },
 )
 
 

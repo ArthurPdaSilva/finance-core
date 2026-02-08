@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import  sessionmaker
 
-from src.models.finance_models import Base
+from models.finance_models import Base
 
 load_dotenv()
 

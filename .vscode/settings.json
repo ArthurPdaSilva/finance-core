@@ -1,5 +1,5 @@
 {
-  "python.analysis.extraPaths": [
-    "./src/db"
-  ]
+    "editor.formatOnSave": true,
+    "ruff.enable": true,
+    "editor.defaultFormatter": "charliermarsh.ruff"
 }

@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "black>=26.1.0",
     "chromadb>=1.4.1",
     "langchain>=1.2.9",
     "langchain-chroma>=1.1.0",
@@ -13,5 +14,39 @@ dependencies = [
     "langgraph>=1.0.8",
     "langgraph-checkpoint-sqlite>=3.0.3",
     "python-dotenv>=1.2.1",
+    "ruff>=0.15.0",
     "sqlalchemy>=2.0.46",
 ]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+exclude = ["venv", ".venv"]
+
+# quais regras habilitar
+select = ["E", "F", "I", "B"]  # E/F = errors, I = imports, B = bugbear
+ignore = [
+    "E501", # ignorar limite de linha muito longa (se quiser)
+]
+
+# ----------------------------------------------------------
+# Ruff formatter (substitui Black se preferir)
+# ----------------------------------------------------------
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+# ----------------------------------------------------------
+# isort via Ruff (não precisa instalar isort separado)
+# ----------------------------------------------------------
+[tool.ruff.lint.isort]
+known-first-party = ["finance_ai"]
+force-sort-within-sections = true
+
+# ----------------------------------------------------------
+# Black (opcional — se for usar Black em vez do Ruff)
+# ----------------------------------------------------------
+[tool.black]
+line-length = 88
+target-version = ["py313"]

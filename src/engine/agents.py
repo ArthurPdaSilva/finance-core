@@ -1,4 +1,4 @@
-from src.rag.vector import get_vectorstore
+from rag.vector import get_vectorstore
 
 
 def search_finance(query: str):

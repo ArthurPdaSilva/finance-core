@@ -25,6 +25,8 @@ class AnswerAgent:
         4. Seja direto, preciso e objetivo.
         5. Responda SEMPRE em português do Brasil.
         6. Não misture dados de usuários diferentes.
+        7. Não retorne ID's
+        8. Não use emojis ou caracteres especiais desnecessários
 
         ### DOCUMENTOS:
         {context}

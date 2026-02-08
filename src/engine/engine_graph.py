@@ -1,11 +1,11 @@
 import sqlite3
 from typing import Any, List, TypedDict
 
-from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import StateGraph
 
-from engine.agents import search_finance
+from engine.agents.answer_agent import AnswerAgent
+from engine.agents.retrieval_agent import RetrievalAgent
 
 
 class State(TypedDict):
@@ -16,29 +16,19 @@ class State(TypedDict):
 
 class EngineGraph:
     def __init__(self):
-        self.llm = ChatOpenAI(model="gpt-4o-mini")
+        self.retrieval_agent = RetrievalAgent()
+        self.answer_agent = AnswerAgent()
 
     def retrieve_node(self, state: State):
-        docs = search_finance(state["question"])
+        docs = self.retrieval_agent.run(state["question"])
         return {"docs": docs}
 
     def answer_node(self, state: State):
-        context = "\n\n".join([d.page_content for d in state["docs"]])
-        q = state["question"]
-
-        resp = self.llm.invoke(
-            f"""
-            Você é um assistente financeiro.
-            Use APENAS as informações abaixo:
-
-            {context}
-
-            Pergunta: {q}
-            Responda de forma direta e clara.
-            """
+        final_answer = self.answer_agent.run(
+            question=state["question"],
+            docs=state["docs"],
         )
-
-        return {"answer": resp.content}
+        return {"answer": final_answer}
 
     def build_graph(self):
         graph = StateGraph(State)

@@ -3,8 +3,8 @@
 
 def init_database_and_vector():
     from db.database import init_db
+    from db.seed_init import init_seed
     from rag.vector import rebuild_vectorstore_from_sql
-    from src.db.seed_init import init_seed
 
     init_db()
     init_seed()
@@ -20,7 +20,7 @@ def init_database_and_vector():
 
 
 def main():
-    from engine.graph import EngineGraph
+    from engine.engine_graph import EngineGraph
 
     engine = EngineGraph()
     graph = engine.build_graph()

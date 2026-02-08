@@ -3,7 +3,7 @@ import sqlite3
 
 from dotenv import load_dotenv
 
-from src.db.seeds import CONTAS, DIVIDAS, USUARIOS
+from db.seeds import CONTAS, DIVIDAS, USUARIOS
 
 load_dotenv()
 

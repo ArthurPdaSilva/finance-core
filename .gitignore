@@ -9,3 +9,10 @@ wheels/
 # Virtual environments
 .venv
 .env
+
+chroma_financas
+
+*.db
+state.db*
+
+services

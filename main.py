@@ -1,22 +1,36 @@
-import os
-from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
+# Iniciando o banco de dados e populando os dados iniciais
+# from src.db.database import init_db
+# from src.db.seed import init_seed
 
-load_dotenv()
 
-model = ChatOpenAI(
-    model="gpt-4o-mini",
-    api_key=os.getenv("OPENAI_API_KEY")
+# init_db()
+# init_seed()
+
+# Passando os dados para o vector store
+# from src.rag.vector import rebuild_vectorstore_from_sql
+
+# rebuild_vectorstore_from_sql()
+
+# Iniciando a aplicação
+# Chaves de configuração
+
+# Iniciar a aplicação
+
+from src.engine.graph import EngineGraph
+
+
+engine = EngineGraph()
+graph = engine.build_graph()
+
+# Passar o dicionário configurável corretamente dentro de `kwargs`
+resp = graph.invoke(
+    {
+        "question": "Qual o total que pago em aluguel, meu lindo",
+    },
+    config={
+        "thread_id": "arthur-thread"   # pode ser qualquer string
+    }
 )
 
-prompt = ChatPromptTemplate.from_messages([
-  ("system", "You are a helpful assistant."),
-  ("user", "{input}")
-])
 
-chain = prompt | model
-
-if __name__ == "__main__":
-    resposta = chain.invoke({"input": "Explique o propósito do LangChain em 2 linhas."})
-    print(resposta.content)
+print(resp["answer"])

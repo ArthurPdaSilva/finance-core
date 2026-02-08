@@ -11,7 +11,7 @@ wheels/
 .env
 
 
-db/seed.py
+seeds.py
 
 chroma_financas
 

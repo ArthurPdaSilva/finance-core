@@ -29,7 +29,6 @@ def sql_to_documents():
         text = (
             f"Dívida: {d.nome}. Valor total: {d.valor_total}. "
             f"Parcelas restantes: {d.parcelas_restantes}. "
-            f"Valor por parcela: {d.valor_por_parcela}."
         )
         docs.append(
             Document(page_content=text, metadata={"table": "dividas", "id": d.id})

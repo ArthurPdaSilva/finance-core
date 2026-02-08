@@ -28,5 +28,4 @@ class Divida(Base):
     nome = Column(String, nullable=False)
     valor_total = Column(Float, nullable=False)
     parcelas_restantes = Column(Integer, nullable=False)
-    valor_por_parcela = Column(Float, nullable=True)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)

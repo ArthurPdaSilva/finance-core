@@ -20,12 +20,17 @@ def init_database_and_vector():
 
 
 def main():
+    from langfuse import get_client
+    from langfuse.langchain import CallbackHandler
+
     from engine.engine_graph import EngineGraph
 
     engine = EngineGraph()
     graph = engine.build_graph()
     print("=== Finance AI Chat ===")
     print("Digite sua pergunta ou 'sair' para encerrar.\n")
+    langfuse_handler = CallbackHandler()
+    langfuse = get_client()
 
     while True:
         question = input("Você: ")
@@ -34,10 +39,15 @@ def main():
             print("Encerrado.")
             break
 
-        resp = graph.invoke({"question": question}, config={"thread_id": "user-thread"})
+        with langfuse.start_as_current_span(name="user-question") as span:
+            span.update_trace(name="user-question", input=question)
+            resp = graph.invoke(
+                {"question": question},
+                config={"thread_id": "user-thread", "callbacks": [langfuse_handler]},
+            )
 
+            span.update_trace(name="user-question", output=resp["answer"])
         print("AI:", resp["answer"])
-        print()
 
 
 if __name__ == "__main__":

@@ -16,5 +16,3 @@ def rebuild_vectorstore_from_sql():
 
     docs = sql_to_documents()
     vs.add_documents(docs)
-
-    print("Embeddings financeiros atualizados!")

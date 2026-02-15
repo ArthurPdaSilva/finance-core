@@ -426,7 +426,7 @@ requires-dist = [
     { name = "langchain-chroma", specifier = ">=1.1.0" },
     { name = "langchain-community", specifier = ">=0.4.1" },
     { name = "langchain-openai", specifier = ">=1.1.7" },
-    { name = "langfuse", specifier = ">=3.14.1" },
+    { name = "langfuse", specifier = "==3.9.3" },
     { name = "langgraph", specifier = ">=1.0.8" },
     { name = "langgraph-checkpoint-sqlite", specifier = ">=3.0.3" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
@@ -981,7 +981,7 @@ wheels = [
 
 [[package]]
 name = "langfuse"
-version = "3.14.1"
+version = "3.9.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "backoff" },
@@ -995,9 +995,9 @@ dependencies = [
     { name = "requests" },
     { name = "wrapt" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/24/7a/ddd8df7f2c5d8c2112a8b20fa88b2513917e2c25d2ef87034c0927f87596/langfuse-3.14.1.tar.gz", hash = "sha256:404a6104cd29353d7829aa417ec46565b04917e5599afdda96c5b0865f4bc991", size = 234530, upload-time = "2026-02-09T15:37:45.994Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/dd/fe/80bda024047570ed6d918ee7481888ee572659d04f40ff49b58701e52245/langfuse-3.9.3.tar.gz", hash = "sha256:8081691d40325b7022b07fc4e5884853c4a4ffe03b05c702490788b9a1a125df", size = 206118, upload-time = "2025-11-12T14:51:23.129Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/80/b9/e8ac3072469737358975da66ec4218dc1cee0051555dd4665b3e34a28420/langfuse-3.14.1-py3-none-any.whl", hash = "sha256:17bed605dbfc9947cbd1738a715f6d27c1b80b6da9f2946586171958fa5820d0", size = 420336, upload-time = "2026-02-09T15:37:44.381Z" },
+    { url = "https://files.pythonhosted.org/packages/01/bc/af86791c761b820097e3ec2faa747bc6a507f6bf0cd6d7b7bbe4d087a6d6/langfuse-3.9.3-py3-none-any.whl", hash = "sha256:0afe88773f20fc67636d8a52dd3a5fb4e10f1c6e226f2c99ace8c65190fb5697", size = 374759, upload-time = "2025-11-12T14:51:21.147Z" },
 ]
 
 [[package]]

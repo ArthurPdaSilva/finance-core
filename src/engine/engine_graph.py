@@ -4,7 +4,6 @@ from typing import Any, List, TypedDict
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import StateGraph
 
-from config.tracing import langfuse_handler
 from engine.agents.answer_agent import AnswerAgent
 from engine.agents.retrieval_agent import RetrievalAgent
 from engine.agents.sql_agent import SqlAgent
@@ -26,18 +25,20 @@ class EngineGraph:
     def retrieve_node(self, state: State):
         docs = self.retrieval_agent.run(
             state["question"],
-            callbacks=[langfuse_handler],
         )
         return {"docs": docs}
 
     def answer_node(self, state: State):
         final_answer = self.answer_agent.run(
-            question=state["question"], docs=state["docs"], callbacks=[langfuse_handler]
+            question=state["question"],
+            docs=state["docs"],
         )
         return {"answer": final_answer}
 
     def sql_node(self, state: State):
-        sql_result = self.sql_agent.run(state["question"], callbacks=[langfuse_handler])
+        sql_result = self.sql_agent.run(
+            state["question"],
+        )
 
         # Rebuild no RAG após mutation
         rebuild_vectorstore_from_sql()
@@ -133,5 +134,4 @@ class EngineGraph:
         checkpointer = SqliteSaver(conn)
         return graph.compile(
             checkpointer=checkpointer,
-            callbacks=[langfuse_handler],
         )

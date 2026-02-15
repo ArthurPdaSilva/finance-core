@@ -34,6 +34,59 @@ def add_conta_tool(nome: str, valor: float, usuario_id: int = 1):
 
 
 @tool
+def atualizar_divida_tool(
+    id: int,
+    nome: str = None,
+    valor_total: float = None,
+    parcelas_restantes: int = None,
+    usuario_id: int = None,
+):
+    """
+    Atualiza uma dívida existente.
+
+    Args:
+        id: ID da dívida.
+        nome: Novo nome da dívida (opcional).
+        valor_total: Novo valor total (opcional).
+        parcelas_restantes: Atualiza quantidade de parcelas restantes (opcional).
+        usuario_id: Atualiza o dono da dívida (opcional).
+    """
+    db = SessionLocal()
+    divida = db.query(Divida).filter(Divida.id == id).first()
+
+    if not divida:
+        db.close()
+        return "Dívida não encontrada."
+
+    if nome is not None:
+        divida.nome = nome
+
+    if valor_total is not None:
+        divida.valor_total = valor_total
+
+    if parcelas_restantes is not None:
+        divida.parcelas_restantes = parcelas_restantes
+
+    if usuario_id is not None:
+        divida.usuario_id = usuario_id
+
+    db.commit()
+    db.refresh(divida)
+    db.close()
+
+    return json.dumps(
+        {
+            "id": divida.id,
+            "nome": divida.nome,
+            "valor_total": divida.valor_total,
+            "parcelas_restantes": divida.parcelas_restantes,
+            "usuario_id": divida.usuario_id,
+            "status": "Dívida atualizada com sucesso.",
+        }
+    )
+
+
+@tool
 def remove_conta_tool(id: int):
     """
     Remove uma conta mensal pelo ID.
@@ -94,6 +147,53 @@ def add_divida_tool(
 
 
 @tool
+def atualizar_conta_tool(
+    id: int,
+    nome: str = None,
+    valor: float = None,
+    usuario_id: int = None,
+):
+    """
+    Atualiza uma conta mensal existente.
+
+    Args:
+        id: ID da conta.
+        nome: Novo nome da conta (opcional).
+        valor: Novo valor da conta (opcional).
+        usuario_id: Novo usuário associado (opcional).
+    """
+    db = SessionLocal()
+    conta = db.query(ContaMensal).filter(ContaMensal.id == id).first()
+
+    if not conta:
+        db.close()
+        return "Conta não encontrada."
+
+    if nome is not None:
+        conta.nome = nome
+
+    if valor is not None:
+        conta.valor = valor
+
+    if usuario_id is not None:
+        conta.usuario_id = usuario_id
+
+    db.commit()
+    db.refresh(conta)
+    db.close()
+
+    return json.dumps(
+        {
+            "id": conta.id,
+            "nome": conta.nome,
+            "valor": conta.valor,
+            "usuario_id": conta.usuario_id,
+            "status": "Conta atualizada com sucesso.",
+        }
+    )
+
+
+@tool
 def remove_divida_tool(id: int):
     """
     Remove uma dívida pelo ID.
@@ -136,6 +236,45 @@ def add_usuario_tool(nome: str, salario: float):
             "id": usuario.id,
             "nome": usuario.nome,
             "salario": usuario.salario,
+        }
+    )
+
+
+@tool
+def atualizar_usuario_tool(id: int, nome: str = None, salario: float = None):
+    """
+    Atualiza os dados de um usuário existente.
+
+    Args:
+        id: ID do usuário a ser atualizado.
+        nome: Novo nome (opcional).
+        salario: Novo salário (opcional).
+    """
+
+    db = SessionLocal()
+    usuario = db.query(Usuario).filter(Usuario.id == id).first()
+
+    if not usuario:
+        db.close()
+        return "Usuário não encontrado."
+
+    # Atualiza apenas os campos enviados
+    if nome is not None:
+        usuario.nome = nome
+
+    if salario is not None:
+        usuario.salario = salario
+
+    db.commit()
+    db.refresh(usuario)
+    db.close()
+
+    return json.dumps(
+        {
+            "id": usuario.id,
+            "nome": usuario.nome,
+            "salario": usuario.salario,
+            "status": "Usuário atualizado com sucesso.",
         }
     )
 

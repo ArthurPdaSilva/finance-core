@@ -56,6 +56,7 @@ if __name__ == "__main__":
 
 
 # TODOS
-# Adicionar tool de update
-# Adicionar Langfuse
+# Adicionar um get_usuario_by name antes dele fazer a consulta por id, para facilitar a consulta por nome
+# Adicionar um get_conta_by_name antes dele fazer a consulta por id, para facilitar a consulta por nome
+# Adicionar um get_divida_by_name antes dele fazer a consulta por id, para facilitar a consulta por nome
 # Adicionar fastapi

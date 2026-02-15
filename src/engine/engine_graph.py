@@ -53,6 +53,8 @@ class EngineGraph:
             "delete",
             "update",
             "insert",
+            "add",
+            "remove",
         ]
 
         q = question.lower()

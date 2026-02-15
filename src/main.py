@@ -43,3 +43,9 @@ def main():
 if __name__ == "__main__":
     # init_database_and_vector()
     main()
+
+
+# TODOS
+# Adicionar tool de update
+# Adicionar Langfuse
+# Adicionar fastapi

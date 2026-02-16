@@ -62,3 +62,7 @@ def finance_ai_question(question: FinanceQuestion):
         span.update_trace(name="user-question", output=resp["answer"])
         print("AI:", resp["answer"])
         return {"message": resp["answer"]}
+
+
+# TODO: Adicionar tool para modificar o owner da conta
+# TODO: Unificar as tabelas de conta e dívida

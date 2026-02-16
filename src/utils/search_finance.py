@@ -1,12 +1,9 @@
 import json
 
-from langchain.tools import tool
-
 from rag.vector import get_vectorstore
 
 
-@tool
-def search_finance_tool(query: str):
+def search_finance(query: str):
     """
     Realiza uma busca semântica em um banco de dados de documentos financeiros,
     retornando os trechos mais relevantes com base na similaridade do conteúdo.

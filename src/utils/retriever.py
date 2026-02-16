@@ -1,11 +1,11 @@
 import json
 
-from engine.tools.search_finance import search_finance_tool
 from rag.vector import rebuild_vectorstore_from_sql
+from utils.search_finance import search_finance
 
 
-class RetrievalAgent:
+class Retriever:
     def run(self, query: str):
         rebuild_vectorstore_from_sql()
-        result = search_finance_tool.func(query)
+        result = search_finance(query)
         return json.loads(result)

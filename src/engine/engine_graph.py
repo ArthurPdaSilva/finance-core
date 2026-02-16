@@ -5,9 +5,9 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import StateGraph
 
 from engine.agents.answer_agent import AnswerAgent
-from engine.agents.retrieval_agent import RetrievalAgent
 from engine.agents.routing_agent import RoutingAgent
 from engine.agents.sql_agent import SqlAgent
+from utils.retriever import Retriever
 
 
 class State(TypedDict):
@@ -21,14 +21,14 @@ class EngineGraph:
         self.routing_agent = RoutingAgent()
         self.answer_agent = AnswerAgent()
         self.sql_agent = SqlAgent()
-        self.retrieval_agent = RetrievalAgent()
+        self.retriever = Retriever()
 
     def route_node(self, state: State):
         intent = self.routing_agent.run(state["question"])
         return {"intent": intent}
 
-    def retrieve_node(self, state: State):
-        docs = self.retrieval_agent.run(
+    def retriever_node(self, state: State):
+        docs = self.retriever.run(
             state["question"],
         )
         return {"docs": docs}
@@ -52,7 +52,7 @@ class EngineGraph:
         graph = StateGraph(State)
 
         graph.add_node("route", self.route_node)
-        graph.add_node("rag", self.retrieve_node)
+        graph.add_node("rag", self.retriever_node)
         graph.add_node("answer", self.answer_node)
         graph.add_node("sql", self.sql_node)
 

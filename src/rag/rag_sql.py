@@ -27,7 +27,7 @@ def sql_to_documents():
 
     # DIVIDAS
     for d in db.query(Divida).all():
-        usuario = usuarios_map[c.usuario_id]
+        usuario = usuarios_map[d.usuario_id]
         text = (
             f"Dívida: {d.nome}. "
             f"Valor total: {d.valor_total} reais. "

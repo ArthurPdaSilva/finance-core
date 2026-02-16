@@ -5,12 +5,12 @@ from engine.tools.sql_tools import (
     add_conta_tool,
     add_divida_tool,
     add_usuario_tool,
-    atualizar_conta_tool,
-    atualizar_divida_tool,
-    atualizar_usuario_tool,
-    remove_conta_tool,
-    remove_divida_tool,
-    remove_usuario_tool,
+    atualizar_conta_por_nome_tool,
+    atualizar_divida_por_nome_tool,
+    atualizar_usuario_por_nome_tool,
+    remover_conta_por_nome_tool,
+    remover_divida_por_nome_tool,
+    remover_usuario_por_nome_tool,
 )
 from utils.llm import make_llm
 
@@ -25,12 +25,12 @@ class SqlAgent:
                 add_conta_tool,
                 add_divida_tool,
                 add_usuario_tool,
-                atualizar_conta_tool,
-                atualizar_usuario_tool,
-                atualizar_divida_tool,
-                remove_conta_tool,
-                remove_usuario_tool,
-                remove_divida_tool,
+                atualizar_conta_por_nome_tool,
+                atualizar_divida_por_nome_tool,
+                atualizar_usuario_por_nome_tool,
+                remover_conta_por_nome_tool,
+                remover_divida_por_nome_tool,
+                remover_usuario_por_nome_tool,
             ],
         )
 
@@ -41,11 +41,23 @@ class SqlAgent:
 
         ### FERRAMENTAS:
         - add_conta(nome, valor, usuario_id=1)
-        - remove_conta(id)
+            Adiciona uma nova conta mensal.
+        - atualizar_conta_por_nome(nome_atual, novo_nome=None, novo_valor=None, usuario_id=None)
+            Atualiza uma conta existente buscando pelo nome, sem expor IDs.
+        - remover_conta_por_nome(nome)
+            Remove uma conta usando apenas o nome.
         - add_divida(nome, valor_total, parcelas_restantes, usuario_id=1)
-        - remover_divida(id)
+            Adiciona uma nova dívida.
+        - atualizar_divida_por_nome(nome_atual, novo_nome=None, novo_valor_total=None, novas_parcelas=None, usuario_id=None)
+            Atualiza uma dívida existente buscando apenas pelo nome.
+        - remover_divida_por_nome(nome)
+            Remove uma dívida usando somente o nome.
         - add_usuario(nome, salario)
-        - remove_usuario(id)
+            Adiciona um novo usuário.
+        - atualizar_usuario_por_nome(nome_atual, novo_nome=None, novo_salario=None)
+            Atualiza um usuário existente buscando pelo nome.
+        - remover_usuario_por_nome(nome)
+            Remove um usuário usando apenas o nome.
 
         ### REGRAS:
         - Para contas e dívidas, se usuario_id não for informado, use usuario_id = 1.

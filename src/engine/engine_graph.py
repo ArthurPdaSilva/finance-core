@@ -1,18 +1,19 @@
 import sqlite3
-from typing import TypedDict
+from typing import Any, List, TypedDict
 
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import StateGraph
 
 from engine.agents.answer_agent import AnswerAgent
+from engine.agents.retrieval_agent import RetrievalAgent
 from engine.agents.routing_agent import RoutingAgent
 from engine.agents.sql_agent import SqlAgent
-from rag.vector import rebuild_vectorstore_from_sql
 
 
 class State(TypedDict):
     question: str
     answer: str
+    docs: List[Any]
 
 
 class EngineGraph:
@@ -20,22 +21,30 @@ class EngineGraph:
         self.routing_agent = RoutingAgent()
         self.answer_agent = AnswerAgent()
         self.sql_agent = SqlAgent()
+        self.retrieval_agent = RetrievalAgent()
 
     def route_node(self, state: State):
         intent = self.routing_agent.run(state["question"])
         return {"intent": intent}
 
+    def retrieve_node(self, state: State):
+        docs = self.retrieval_agent.run(
+            state["question"],
+        )
+        return {"docs": docs}
+
     def answer_node(self, state: State):
-        final_answer = self.answer_agent.run(question=state["question"])
+        final_answer = self.answer_agent.run(
+            question=state["question"],
+            docs=state["docs"],
+        )
         return {"answer": final_answer}
 
     def sql_node(self, state: State):
+
         sql_result = self.sql_agent.run(
             state["question"],
         )
-
-        # Rebuild no RAG após mutation
-        rebuild_vectorstore_from_sql()
 
         return {"answer": sql_result}
 
@@ -43,6 +52,7 @@ class EngineGraph:
         graph = StateGraph(State)
 
         graph.add_node("route", self.route_node)
+        graph.add_node("rag", self.retrieve_node)
         graph.add_node("answer", self.answer_node)
         graph.add_node("sql", self.sql_node)
 
@@ -52,10 +62,12 @@ class EngineGraph:
             "route",
             lambda s: s["intent"],
             {
-                "answer": "answer",
+                "rag": "rag",
                 "sql": "sql",
             },
         )
+
+        graph.add_edge("rag", "answer")
 
         # Finais
         graph.set_finish_point("answer")

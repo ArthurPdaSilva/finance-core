@@ -13,7 +13,8 @@ class RoutingAgent:
             Você é um agente de roteamento.
             Classifique a intenção do usuário entre duas opções:
 
-            - "answer": quando o usuário quer consultar, perguntar, explicar algo.
+            - "rag": quando o usuário quer consultar, perguntar, explicar algo ou qualquer assunto que não envolva manipulação de dados financeiros.
+                Exemplo: 'Quais usuários estão no banco?'
             - "sql": quando o usuário quer adicionar, atualizar, editar, remover,
               cadastrar ou modificar dados financeiros.
     

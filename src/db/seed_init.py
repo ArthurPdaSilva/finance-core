@@ -1,13 +1,9 @@
-import os
 import sqlite3
 
-from dotenv import load_dotenv
-
+from config.secrets import Secrets
 from db.seeds import CONTAS, DIVIDAS, USUARIOS
 
-load_dotenv()
-
-DB_NAME = os.getenv("DATABASE_NAME") or "database.sqlite3"
+DB_NAME = Secrets.DATABASE_NAME or "database.sqlite3"
 
 # ---------------------------------------------------------
 # Criação das tabelas (somente exemplo – edite se já existem)

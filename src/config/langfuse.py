@@ -1,14 +1,11 @@
-import os
-
-from dotenv import load_dotenv
 from langfuse import Langfuse
 
-load_dotenv()
+from config.secrets import Secrets
 
 langfuse = (
     Langfuse(
-        public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
-        secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
-        host=os.getenv("LANGFUSE_BASE_URL"),
+        public_key=Secrets.LANGFUSE_PUBLIC_KEY,
+        secret_key=Secrets.LANGFUSE_SECRET_KEY,
+        host=Secrets.LANGFUSE_BASE_URL,
     ),
 )

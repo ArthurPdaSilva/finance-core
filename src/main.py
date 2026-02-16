@@ -1,4 +1,6 @@
 # # Iniciando o banco de dados e populando os dados iniciais
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
 
 def init_database_and_vector():
@@ -13,47 +15,43 @@ def init_database_and_vector():
     rebuild_vectorstore_from_sql()
 
 
-# Iniciando a aplicação
-# Chaves de configuração
-
-# Iniciar a aplicação
+app = FastAPI()
 
 
-def main():
+class FinanceQuestion(BaseModel):
+    question: str
+    key: str
+
+
+# cd src
+# uvicorn src.main:app --reload
+@app.post("/finance-ai")
+def finance_ai_question(question: FinanceQuestion):
+
     from langfuse import get_client
     from langfuse.langchain import CallbackHandler
 
+    from config.secrets import Secrets
     from engine.engine_graph import EngineGraph
+
+    if question.key != Secrets.API_KEY:
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized: Invalid API key provided.",
+        )
 
     engine = EngineGraph()
     graph = engine.build_graph()
-    print("=== Finance AI Chat ===")
-    print("Digite sua pergunta ou 'sair' para encerrar.\n")
     langfuse_handler = CallbackHandler()
     langfuse = get_client()
 
-    while True:
-        question = input("Você: ")
+    with langfuse.start_as_current_span(name="user-question") as span:
+        span.update_trace(name="user-question", input=question)
+        resp = graph.invoke(
+            {"question": question.question},
+            config={"thread_id": "user-thread", "callbacks": [langfuse_handler]},
+        )
 
-        if question.lower() in ["s", "sair", "exit", "quit"]:
-            print("Encerrado.")
-            break
-
-        with langfuse.start_as_current_span(name="user-question") as span:
-            span.update_trace(name="user-question", input=question)
-            resp = graph.invoke(
-                {"question": question},
-                config={"thread_id": "user-thread", "callbacks": [langfuse_handler]},
-            )
-
-            span.update_trace(name="user-question", output=resp["answer"])
+        span.update_trace(name="user-question", output=resp["answer"])
         print("AI:", resp["answer"])
-
-
-if __name__ == "__main__":
-    init_database_and_vector()
-    # main()
-
-
-# TODOS
-# Adicionar fastapi
+        return {"message": resp["answer"]}

@@ -29,6 +29,7 @@ class EngineGraph:
         return {"intent": intent}
 
     def retriever_node(self, state: State):
+        rebuild_vectorstore_from_sql()
         docs = self.retriever.run(
             state["question"],
         )
@@ -45,7 +46,7 @@ class EngineGraph:
         sql_result = self.sql_agent.run(
             state["question"],
         )
-        rebuild_vectorstore_from_sql()
+
         return {"answer": sql_result}
 
     def build_graph(self):

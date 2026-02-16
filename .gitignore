@@ -11,12 +11,10 @@ wheels/
 .env
 
 
-seeds.py
-
 chroma_financas
 
 *.db
 state.db*
 
 services
-src/db/seed.py
+# src/db/seed.py

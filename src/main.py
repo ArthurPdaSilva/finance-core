@@ -1,5 +1,5 @@
 # # Iniciando o banco de dados e populando os dados iniciais
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
 
 from utils.check_key import check_api_key

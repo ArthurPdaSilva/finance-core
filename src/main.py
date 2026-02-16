@@ -51,12 +51,9 @@ def main():
 
 
 if __name__ == "__main__":
-    # init_database_and_vector()
-    main()
+    init_database_and_vector()
+    # main()
 
 
 # TODOS
-# Adicionar um get_usuario_by name antes dele fazer a consulta por id, para facilitar a consulta por nome
-# Adicionar um get_conta_by_name antes dele fazer a consulta por id, para facilitar a consulta por nome
-# Adicionar um get_divida_by_name antes dele fazer a consulta por id, para facilitar a consulta por nome
 # Adicionar fastapi

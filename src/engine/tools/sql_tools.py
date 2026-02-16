@@ -1,6 +1,7 @@
 import json
 
 from langchain.tools import tool
+from sqlalchemy import func
 
 from db.database import SessionLocal
 from models.finance_models import ContaMensal, Divida, Usuario
@@ -45,7 +46,11 @@ def atualizar_conta_por_nome_tool(
     """
 
     db = SessionLocal()
-    conta = db.query(ContaMensal).filter(ContaMensal.nome == nome_atual).first()
+    conta = (
+        db.query(ContaMensal)
+        .filter(func.lower(ContaMensal.nome) == nome_atual.lower())
+        .first()
+    )
 
     if not conta:
         db.close()
@@ -80,7 +85,11 @@ def remover_conta_por_nome_tool(nome: str):
     """
 
     db = SessionLocal()
-    conta = db.query(ContaMensal).filter(ContaMensal.nome == nome).first()
+    conta = (
+        db.query(ContaMensal)
+        .filter(func.lower(ContaMensal.nome) == nome.lower())
+        .first()
+    )
 
     if not conta:
         db.close()
@@ -149,7 +158,9 @@ def atualizar_divida_por_nome_tool(
     """
 
     db = SessionLocal()
-    divida = db.query(Divida).filter(Divida.nome == nome_atual).first()
+    divida = (
+        db.query(Divida).filter(func.lower(Divida.nome) == nome_atual.lower()).first()
+    )
 
     if not divida:
         db.close()
@@ -188,7 +199,7 @@ def remover_divida_por_nome_tool(nome: str):
     """
 
     db = SessionLocal()
-    divida = db.query(Divida).filter(Divida.nome == nome).first()
+    divida = db.query(Divida).filter(func.lower(Divida.nome) == nome.lower()).first()
 
     if not divida:
         db.close()
@@ -242,7 +253,7 @@ def atualizar_usuario_por_nome_tool(
     """
 
     db = SessionLocal()
-    usuario = db.query(Usuario).filter(Usuario.nome == nome_atual).first()
+    usuario = db.query(Usuario).filter(func.lower(Usuario.nome) == nome_atual.lower())
 
     if not usuario:
         db.close()
@@ -274,7 +285,7 @@ def remover_usuario_por_nome_tool(nome: str):
     """
 
     db = SessionLocal()
-    usuario = db.query(Usuario).filter(Usuario.nome == nome).first()
+    usuario = db.query(Usuario).filter(func.lower(Usuario.nome) == nome.lower()).first()
 
     if not usuario:
         db.close()

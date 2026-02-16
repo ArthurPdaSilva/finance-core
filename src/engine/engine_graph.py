@@ -7,7 +7,8 @@ from langgraph.graph import StateGraph
 from engine.agents.answer_agent import AnswerAgent
 from engine.agents.routing_agent import RoutingAgent
 from engine.agents.sql_agent import SqlAgent
-from utils.retriever import Retriever
+from rag.retriever import Retriever
+from rag.vector import rebuild_vectorstore_from_sql
 
 
 class State(TypedDict):
@@ -41,11 +42,10 @@ class EngineGraph:
         return {"answer": final_answer}
 
     def sql_node(self, state: State):
-
         sql_result = self.sql_agent.run(
             state["question"],
         )
-
+        rebuild_vectorstore_from_sql()
         return {"answer": sql_result}
 
     def build_graph(self):

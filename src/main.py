@@ -2,11 +2,20 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
+from utils.check_key import check_api_key
+
 app = FastAPI()
 
 
+class InitDb(BaseModel):
+    key: str
+
+
 @app.get("/init-db")
-def init_database_and_vector_store():
+def init_database_and_vector_store(init_db: InitDb):
+
+    check_api_key(init_db.key)
+
     def init_database_and_vector():
         from db.database import init_db
         from db.seed_init import init_seed
@@ -31,18 +40,12 @@ class FinanceQuestion(BaseModel):
 # uvicorn src.main:app --reload
 @app.post("/finance-ai")
 def finance_ai_question(question: FinanceQuestion):
-
     from langfuse import get_client
     from langfuse.langchain import CallbackHandler
 
-    from config.secrets import Secrets
     from engine.engine_graph import EngineGraph
 
-    if question.key != Secrets.API_KEY:
-        raise HTTPException(
-            status_code=401,
-            detail="Unauthorized: Invalid API key provided.",
-        )
+    check_api_key(question.key)
 
     engine = EngineGraph()
     graph = engine.build_graph()

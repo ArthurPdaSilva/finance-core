@@ -2,20 +2,24 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-
-def init_database_and_vector():
-    from db.database import init_db
-    from db.seed_init import init_seed
-    from rag.vector import rebuild_vectorstore_from_sql
-
-    init_db()
-    init_seed()
-
-    # Passando os dados para o vector store
-    rebuild_vectorstore_from_sql()
-
-
 app = FastAPI()
+
+
+@app.get("/init-db")
+def init_database_and_vector_store():
+    def init_database_and_vector():
+        from db.database import init_db
+        from db.seed_init import init_seed
+        from rag.vector import rebuild_vectorstore_from_sql
+
+        init_db()
+        init_seed()
+
+        # Passando os dados para o vector store
+        rebuild_vectorstore_from_sql()
+
+    init_database_and_vector()
+    return {"message": "Banco de dados e vector store inicializados com sucesso!"}
 
 
 class FinanceQuestion(BaseModel):

@@ -1,9 +1,19 @@
 import sqlite3
 
 from config.secrets import Secrets
-from db.seeds import CONTAS, DIVIDAS, USUARIOS
+from db.seeds import REGISTROS_FINANCEIROS, USUARIOS
+from models.finance_models import TipoTransacao
 
 DB_NAME = Secrets.DATABASE_NAME or "database.sqlite3"
+
+# ---------------------------------------------------------
+# Criação / Remoção de Tabelas
+# ---------------------------------------------------------
+
+DROP_OLD_TABLES = [
+    "DROP TABLE IF EXISTS contas_mensais",
+    "DROP TABLE IF EXISTS dividas",
+]
 
 # ---------------------------------------------------------
 # Criação das tabelas (somente exemplo – edite se já existem)
@@ -17,21 +27,14 @@ CREATE_TABLES = [
     )
     """,
     """
-    CREATE TABLE IF NOT EXISTS contas_mensais (
+    CREATE TABLE IF NOT EXISTS registros_financeiros (
         id INTEGER PRIMARY KEY,
         usuario_id INTEGER NOT NULL,
+        tipo TEXT NOT NULL CHECK(tipo IN ('conta', 'divida')),                -- conta | divida
         nome TEXT NOT NULL,
-        valor REAL NOT NULL,
-        FOREIGN KEY(usuario_id) REFERENCES usuarios(id)
-    )
-    """,
-    """
-    CREATE TABLE IF NOT EXISTS dividas (
-        id INTEGER PRIMARY KEY,
-        usuario_id INTEGER NOT NULL,
-        nome TEXT NOT NULL,
-        valor_total REAL NOT NULL,
-        parcelas_restantes INTEGER NOT NULL,
+        valor_por_parcela REAL NOT NULL,               -- valor da conta ou parcela
+        valor_total REAL,                  -- apenas dívidas
+        parcelas_restantes INTEGER,        -- apenas dívidas
         FOREIGN KEY(usuario_id) REFERENCES usuarios(id)
     )
     """,
@@ -43,29 +46,40 @@ CREATE_TABLES = [
 # ---------------------------------------------------------
 
 
+def drop_old_tables(cursor):
+    for query in DROP_OLD_TABLES:
+        cursor.execute(query)
+
+
 def create_tables(cursor):
     for query in CREATE_TABLES:
         cursor.execute(query)
 
 
 def clear_tables(cursor):
-    # Deleta tudo para permitir rodar várias vezes
-    cursor.execute("DELETE FROM dividas")
-    cursor.execute("DELETE FROM contas_mensais")
+    cursor.execute("DELETE FROM registros_financeiros")
     cursor.execute("DELETE FROM usuarios")
 
 
 def seed_data(cursor):
+    # Usuários
     cursor.executemany(
-        "INSERT INTO usuarios (id, nome, salario) VALUES (?, ?, ?)", USUARIOS
+        "INSERT INTO usuarios (id, nome, salario) VALUES (?, ?, ?)",
+        USUARIOS,
     )
+
+    # Registros Financeiros
+    for registro in REGISTROS_FINANCEIROS:
+        if isinstance(registro["tipo"], TipoTransacao):
+            registro["tipo"] = registro["tipo"].value
+
     cursor.executemany(
-        "INSERT INTO contas_mensais (id, usuario_id, nome, valor) VALUES (?, ?, ?, ?)",
-        CONTAS,
-    )
-    cursor.executemany(
-        "INSERT INTO dividas (id, usuario_id, nome, valor_total, parcelas_restantes) VALUES (?, ?, ?, ?, ?)",
-        DIVIDAS,
+        """
+        INSERT INTO registros_financeiros 
+        (id, usuario_id, tipo, nome, valor_por_parcela, valor_total, parcelas_restantes)
+        VALUES (:id, :usuario_id, :tipo, :nome, :valor_por_parcela, :valor_total, :parcelas_restantes)
+        """,
+        REGISTROS_FINANCEIROS,
     )
 
 
@@ -78,6 +92,7 @@ def init_seed():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
+    drop_old_tables(cursor)
     create_tables(cursor)
     clear_tables(cursor)
     seed_data(cursor)

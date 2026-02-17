@@ -37,7 +37,7 @@ class FinanceQuestion(BaseModel):
 
 
 # cd src
-# uvicorn src.main:app --reload
+# uvicorn main:app --reload
 @app.post("/finance-ai")
 def finance_ai_question(question: FinanceQuestion):
     from langfuse import get_client
@@ -64,5 +64,5 @@ def finance_ai_question(question: FinanceQuestion):
         return {"message": resp["answer"]}
 
 
-# TODO: Adicionar tool para modificar o owner da conta
 # TODO: Unificar as tabelas de conta e dívida
+# TODO: Adicionar tool para modificar o owner da conta

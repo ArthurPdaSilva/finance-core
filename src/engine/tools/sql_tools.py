@@ -4,227 +4,227 @@ from langchain.tools import tool
 from sqlalchemy import func
 
 from db.database import SessionLocal
-from models.finance_models import ContaMensal, Divida, Usuario
+from models.finance_models import RegistroFinanceiro, TipoTransacao, Usuario
 
-# --------------------------
-#         CONTAS
-# --------------------------
+# ==========================================================
+#                 REGISTROS FINANCEIROS
+# ==========================================================
+
+
+def get_usuario_id_by_nome(db, nome: str | None):
+    """Busca o ID do usuário pelo nome, retornando 1 como padrão."""
+    if not nome:
+        return 1  # fallback seguro
+
+    usuario = db.query(Usuario).filter(func.lower(Usuario.nome) == nome.lower()).first()
+
+    if not usuario:
+        return 1  # fallback silencioso (não quebra a tool)
+
+    return usuario.id
 
 
 @tool
-def add_conta_tool(nome: str, valor: float, usuario_id: int = 1):
+def add_registro_tool(
+    nome: str,
+    tipo: str,
+    usuario_nome: str = None,
+    valor: float = None,
+    valor_total: float = None,
+    parcelas_restantes: int = None,
+):
     """
-    Adiciona uma conta mensal no banco de dados.
+    Cria um registro financeiro unificado (conta ou dívida).
 
-    Args:
-        nome: Nome da conta.
-        valor: Valor da conta.
-        usuario_id: Usuário dono da conta (default=1).
+    Para CONTAS:
+        - tipo="conta"
+        - valor (obrigatório)
+
+    Para DÍVIDAS:
+        - tipo="divida"
+        - valor_total e parcelas_restantes obrigatórios
     """
+
     db = SessionLocal()
-    conta = ContaMensal(
+
+    tipo_enum = TipoTransacao(tipo)
+
+    if tipo_enum == TipoTransacao.CONTA:
+        if valor is None:
+            return "Conta precisa de 'valor'."
+        valor_por_parcela = valor
+        valor_total = None
+        parcelas_restantes = None
+
+    elif tipo_enum == TipoTransacao.DIVIDA:
+        if valor_total is None or parcelas_restantes is None:
+            return "Dívida precisa de 'valor_total' e 'parcelas_restantes'."
+        valor_por_parcela = valor_total / parcelas_restantes
+
+    usuario_id = get_usuario_id_by_nome(db, usuario_nome)
+
+    registro = RegistroFinanceiro(
         nome=nome,
-        valor=valor,
+        tipo=tipo_enum,
         usuario_id=usuario_id,
+        valor_por_parcela=valor_por_parcela,
+        valor_total=valor_total,
+        parcelas_restantes=parcelas_restantes,
     )
-    db.add(conta)
+
+    db.add(registro)
     db.commit()
-    db.refresh(conta)
+    db.refresh(registro)
     db.close()
-    return json.dumps({"id": conta.id, "nome": conta.nome, "valor": conta.valor})
+
+    return json.dumps(
+        {
+            "id": registro.id,
+            "nome": registro.nome,
+            "tipo": registro.tipo.value,
+            "valor_por_parcela": registro.valor_por_parcela,
+        }
+    )
 
 
 @tool
-def atualizar_conta_por_nome_tool(
+def atualizar_registro_por_nome_tool(
     nome_atual: str,
     novo_nome: str = None,
     novo_valor: float = None,
-    usuario_id: int = None,
-):
-    """
-    Atualiza uma conta buscando pelo nome, sem expor IDs ao LLM.
-    """
-
-    db = SessionLocal()
-    conta = (
-        db.query(ContaMensal)
-        .filter(func.lower(ContaMensal.nome) == nome_atual.lower())
-        .first()
-    )
-
-    if not conta:
-        db.close()
-        return "Conta não encontrada pelo nome informado."
-
-    if novo_nome is not None:
-        conta.nome = novo_nome
-
-    if novo_valor is not None:
-        conta.valor = novo_valor
-
-    if usuario_id is not None:
-        conta.usuario_id = usuario_id
-
-    db.commit()
-    db.refresh(conta)
-    db.close()
-
-    return json.dumps(
-        {
-            "nome": conta.nome,
-            "valor": conta.valor,
-            "status": "Conta atualizada com sucesso.",
-        }
-    )
-
-
-@tool
-def remover_conta_por_nome_tool(nome: str):
-    """
-    Remove uma conta pelo nome sem expor ID ao agente.
-    """
-
-    db = SessionLocal()
-    conta = (
-        db.query(ContaMensal)
-        .filter(func.lower(ContaMensal.nome) == nome.lower())
-        .first()
-    )
-
-    if not conta:
-        db.close()
-        return "Conta não encontrada."
-
-    db.delete(conta)
-    db.commit()
-    db.close()
-
-    return "Conta removida com sucesso."
-
-
-# --------------------------
-#         DÍVIDAS
-# --------------------------
-
-
-@tool
-def add_divida_tool(
-    nome: str,
-    valor_total: float,
-    parcelas_restantes: int,
-    usuario_id: int = 1,
-):
-    """
-    Adiciona uma dívida no banco.
-
-    Args:
-        nome: Nome da dívida.
-        valor_total: Valor total devido.
-        parcelas_restantes: Número de parcelas finais.
-        usuario_id: Dono da dívida.
-    """
-    db = SessionLocal()
-    d = Divida(
-        nome=nome,
-        valor_total=valor_total,
-        parcelas_restantes=parcelas_restantes,
-        usuario_id=usuario_id,
-    )
-    db.add(d)
-    db.commit()
-    db.refresh(d)
-    db.close()
-
-    return json.dumps(
-        {
-            "id": d.id,
-            "nome": d.nome,
-            "valor_total": d.valor_total,
-            "parcelas_restantes": d.parcelas_restantes,
-        }
-    )
-
-
-@tool
-def atualizar_divida_por_nome_tool(
-    nome_atual: str,
-    novo_nome: str = None,
     novo_valor_total: float = None,
     novas_parcelas: int = None,
-    usuario_id: int = None,
+    novo_tipo: str = None,
 ):
     """
-    Atualiza uma dívida pelo nome, sem expor IDs ao modelo.
+    Atualiza qualquer registro financeiro (conta ou dívida) pelo NOME.
     """
 
     db = SessionLocal()
-    divida = (
-        db.query(Divida).filter(func.lower(Divida.nome) == nome_atual.lower()).first()
+    registro = (
+        db.query(RegistroFinanceiro)
+        .filter(func.lower(RegistroFinanceiro.nome) == nome_atual.lower())
+        .first()
     )
 
-    if not divida:
+    if not registro:
         db.close()
-        return "Dívida não encontrada pelo nome informado."
+        return "Registro financeiro não encontrado."
 
+    # Atualiza nome
     if novo_nome is not None:
-        divida.nome = novo_nome
+        registro.nome = novo_nome
 
-    if novo_valor_total is not None:
-        divida.valor_total = novo_valor_total
+    # Atualiza tipo
+    if novo_tipo is not None:
+        registro.tipo = TipoTransacao(novo_tipo)
 
-    if novas_parcelas is not None:
-        divida.parcelas_restantes = novas_parcelas
+    # Atualiza conta (valor único)
+    if registro.tipo == TipoTransacao.CONTA:
+        if novo_valor is not None:
+            registro.valor_por_parcela = novo_valor
+        registro.valor_total = None
+        registro.parcelas_restantes = None
 
-    if usuario_id is not None:
-        divida.usuario_id = usuario_id
+    # Atualiza dívida
+    if registro.tipo == TipoTransacao.DIVIDA:
+        if novo_valor_total is not None:
+            registro.valor_total = novo_valor_total
+
+        if novas_parcelas is not None:
+            registro.parcelas_restantes = novas_parcelas
+
+        if registro.valor_total and registro.parcelas_restantes:
+            registro.valor_por_parcela = (
+                registro.valor_total / registro.parcelas_restantes
+            )
 
     db.commit()
-    db.refresh(divida)
+    db.refresh(registro)
     db.close()
 
     return json.dumps(
         {
-            "nome": divida.nome,
-            "valor_total": divida.valor_total,
-            "parcelas_restantes": divida.parcelas_restantes,
-            "status": "Dívida atualizada.",
+            "nome": registro.nome,
+            "tipo": registro.tipo.value,
+            "valor_por_parcela": registro.valor_por_parcela,
+            "status": "Registro atualizado com sucesso.",
         }
     )
 
 
 @tool
-def remover_divida_por_nome_tool(nome: str):
+def remover_registro_por_nome_tool(nome: str):
     """
-    Remove uma dívida pelo nome sem expor ID ao agente.
+    Remove qualquer registro financeiro pelo nome.
     """
 
     db = SessionLocal()
-    divida = db.query(Divida).filter(func.lower(Divida.nome) == nome.lower()).first()
+    registro = (
+        db.query(RegistroFinanceiro)
+        .filter(func.lower(RegistroFinanceiro.nome) == nome.lower())
+        .first()
+    )
 
-    if not divida:
+    if not registro:
         db.close()
-        return "Dívida não encontrada."
+        return "Registro financeiro não encontrado."
 
-    db.delete(divida)
+    db.delete(registro)
     db.commit()
     db.close()
 
-    return "Dívida removida com sucesso."
+    return "Registro removido com sucesso."
 
 
-# --------------------------
-#        USUÁRIOS
-# --------------------------
+@tool
+def alterar_usuario_do_registro_por_nome_tool(nome: str, novo_usuario_nome: str):
+    """
+    Altera o usuário associado a um registro financeiro pelo nome do registro.
+    """
+
+    db = SessionLocal()
+    registro = (
+        db.query(RegistroFinanceiro)
+        .filter(func.lower(RegistroFinanceiro.nome) == nome.lower())
+        .first()
+    )
+
+    if not registro:
+        db.close()
+        return "Registro financeiro não encontrado."
+
+    novo_usuario_id = get_usuario_id_by_nome(db, novo_usuario_nome)
+
+    registro.usuario_id = novo_usuario_id
+    db.commit()
+    db.refresh(registro)
+    db.close()
+
+    return json.dumps(
+        {
+            "nome": registro.nome,
+            "novo_usuario_id": registro.usuario_id,
+            "status": "Usuário do registro atualizado com sucesso.",
+        }
+    )
+
+
+# ==========================================================
+#                        USUÁRIOS
+# ==========================================================
+
+
+# ==========================================================
+#                         USUÁRIOS
+# ==========================================================
 
 
 @tool
 def add_usuario_tool(nome: str, salario: float):
     """
-    Adiciona um usuário ao banco.
-
-    Args:
-        nome: Nome do usuário.
-        salario: Salário associado.
+    Cadastra um novo usuário no sistema.
+    Recebe o nome do usuário e o valor do salário mensal.
     """
     db = SessionLocal()
     usuario = Usuario(nome=nome, salario=salario)
@@ -234,11 +234,7 @@ def add_usuario_tool(nome: str, salario: float):
     db.close()
 
     return json.dumps(
-        {
-            "id": usuario.id,
-            "nome": usuario.nome,
-            "salario": usuario.salario,
-        }
+        {"id": usuario.id, "nome": usuario.nome, "salario": usuario.salario}
     )
 
 
@@ -249,11 +245,13 @@ def atualizar_usuario_por_nome_tool(
     novo_salario: float = None,
 ):
     """
-    Atualiza um usuário buscando pelo nome, sem expor IDs.
+    Atualiza as informações de um usuário existente pesquisando pelo nome atual.
+    Permite alterar o nome ou o salário.
     """
-
     db = SessionLocal()
-    usuario = db.query(Usuario).filter(func.lower(Usuario.nome) == nome_atual.lower())
+    usuario = (
+        db.query(Usuario).filter(func.lower(Usuario.nome) == nome_atual.lower()).first()
+    )
 
     if not usuario:
         db.close()
@@ -281,9 +279,8 @@ def atualizar_usuario_por_nome_tool(
 @tool
 def remover_usuario_por_nome_tool(nome: str):
     """
-    Remove um usuário sem expor ID.
+    Remove permanentemente um usuário do banco de dados pelo seu nome.
     """
-
     db = SessionLocal()
     usuario = db.query(Usuario).filter(func.lower(Usuario.nome) == nome.lower()).first()
 

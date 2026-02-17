@@ -2,14 +2,12 @@ from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from engine.tools.sql_tools import (
-    add_conta_tool,
-    add_divida_tool,
+    add_registro_tool,
     add_usuario_tool,
-    atualizar_conta_por_nome_tool,
-    atualizar_divida_por_nome_tool,
+    alterar_usuario_do_registro_por_nome_tool,
+    atualizar_registro_por_nome_tool,
     atualizar_usuario_por_nome_tool,
-    remover_conta_por_nome_tool,
-    remover_divida_por_nome_tool,
+    remover_registro_por_nome_tool,
     remover_usuario_por_nome_tool,
 )
 from utils.llm import make_llm
@@ -22,14 +20,12 @@ class SqlAgent:
         self.agent = create_agent(
             model=self.llm,
             tools=[
-                add_conta_tool,
-                add_divida_tool,
+                add_registro_tool,
+                atualizar_registro_por_nome_tool,
+                alterar_usuario_do_registro_por_nome_tool,
+                remover_registro_por_nome_tool,
                 add_usuario_tool,
-                atualizar_conta_por_nome_tool,
-                atualizar_divida_por_nome_tool,
                 atualizar_usuario_por_nome_tool,
-                remover_conta_por_nome_tool,
-                remover_divida_por_nome_tool,
                 remover_usuario_por_nome_tool,
             ],
         )
@@ -40,32 +36,41 @@ class SqlAgent:
         Você não escreve SQL — somente usa as tools abaixo.
 
         ### FERRAMENTAS:
-        - add_conta(nome, valor, usuario_id=1)
-            Adiciona uma nova conta mensal.
-        - atualizar_conta_por_nome(nome_atual, novo_nome=None, novo_valor=None, usuario_id=None)
-            Atualiza uma conta existente buscando pelo nome, sem expor IDs.
-        - remover_conta_por_nome(nome)
-            Remove uma conta usando apenas o nome.
-        - add_divida(nome, valor_total, parcelas_restantes, usuario_id=1)
-            Adiciona uma nova dívida.
-        - atualizar_divida_por_nome(nome_atual, novo_nome=None, novo_valor_total=None, novas_parcelas=None, usuario_id=None)
-            Atualiza uma dívida existente buscando apenas pelo nome.
-        - remover_divida_por_nome(nome)
-            Remove uma dívida usando somente o nome.
-        - add_usuario(nome, salario)
-            Adiciona um novo usuário.
-        - atualizar_usuario_por_nome(nome_atual, novo_nome=None, novo_salario=None)
-            Atualiza um usuário existente buscando pelo nome.
-        - remover_usuario_por_nome(nome)
-            Remove um usuário usando apenas o nome.
+        📌 REGISTROS FINANCEIROS (contas e dívidas unificados)
+
+        add_registro_tool(nome, tipo, usuario_nome=None, valor=None, valor_total=None, parcelas_restantes=None)
+            Cria um registro unificado.
+            - Para contas → tipo="conta" + valor
+            - Para dívidas → tipo="divida" + valor_total + parcelas_restantes
+
+        atualizar_registro_por_nome_tool(nome_atual, novo_nome=None, novo_valor=None,novo_valor_total=None,novas_parcelas=None, novo_tipo=None)
+            Atualiza qualquer registro buscando pelo nome.
+
+        remover_registro_por_nome_tool(nome)
+            Remove qualquer registro financeiro usando apenas o nome.
+
+        alterar_usuario_do_registro_por_nome_tool(nome, novo_usuario_nome)
+            Altera apenas o usuário relacionado ao registro.
+
+        📌 USUÁRIOS
+
+        add_usuario_tool(nome, salario)
+            Adiciona um usuário.
+
+        atualizar_usuario_por_nome_tool(...)
+            Atualiza dados do usuário pelo nome.
+
+        remover_usuario_por_nome_tool(nome)
+            Remove usuário pelo nome.
 
         ### REGRAS:
-        - Para contas e dívidas, se usuario_id não for informado, use usuario_id = 1.
-        - Para usuários, se não for informado o salario, use salario = 0.
-        - Para dívidas sem parcelas: use parcelas_restantes = 1.
-        - Nunca invente argumentos.
-        - Sempre responda com detalhes do que foi feito.
+        - Para registros: se usuario_nome não for informado → usar usuario_id = 1
+        - Para usuários: se salario não for informado → usar salario = 0
+        - Para dívidas sem parcelas → usar parcelas_restantes = 1
+        - Nunca invente argumentos
+        - Sempre usar apenas as tools listadas
 
+  
         """
 
         result = self.agent.invoke(

@@ -1,7 +1,11 @@
 from langchain_core.documents import Document
 
 from db.database import SessionLocal
-from models.finance_models import ContaMensal, Divida, Usuario
+from models.finance_models import (
+    RegistroFinanceiro,
+    TipoTransacao,
+    Usuario,
+)
 
 
 def sql_to_documents():
@@ -14,27 +18,31 @@ def sql_to_documents():
         text = f"UsuárioID: {u.id}. Nome: {u.nome}. Salário: {u.salario} reais."
         docs.append(Document(page_content=text))
 
-    # CONTAS MENSAIS
-    for c in db.query(ContaMensal).all():
-        usuario = usuarios_map[c.usuario_id]
-        text = (
-            f"Conta mensal: {c.nome}. "
-            f"Valor: {c.valor} reais. "
-            f"UsuárioID: {c.usuario_id}."
-            f"UsuarioNome: {usuario.nome}"
-        )
-        docs.append(Document(page_content=text))
+    # REGISTROS FINANCEIROS
+    registros = db.query(RegistroFinanceiro).all()
 
-    # DIVIDAS
-    for d in db.query(Divida).all():
-        usuario = usuarios_map[d.usuario_id]
+    for r in registros:
+        usuario = usuarios_map[r.usuario_id]
+
+        # Tipo legível
+        tipo_str = "Conta mensal" if r.tipo == TipoTransacao.CONTA else "Dívida"
+
+        # Montagem do texto base
         text = (
-            f"Dívida: {d.nome}. "
-            f"Valor total: {d.valor_total} reais. "
-            f"Parcelas restantes: {d.parcelas_restantes}. "
-            f"UsuárioID: {d.usuario_id}."
-            f"UsuarioNome: {usuario.nome}"
+            f"{tipo_str}: {r.nome}. "
+            f"Valor por parcela: {r.valor_por_parcela:.2f} reais. "
+            f"UsuárioID: {r.usuario_id}. "
+            f"UsuarioNome: {usuario.nome}. "
         )
+
+        # Se tiver valor total, adiciona
+        if r.valor_total is not None:
+            text += f"Valor total: {r.valor_total:.2f} reais. "
+
+        # Se tiver parcelas restantes, adiciona
+        if r.parcelas_restantes is not None:
+            text += f"Parcelas restantes: {r.parcelas_restantes}. "
+
         docs.append(Document(page_content=text))
 
     db.close()

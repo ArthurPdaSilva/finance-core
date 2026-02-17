@@ -1,4 +1,3 @@
-# # Iniciando o banco de dados e populando os dados iniciais
 from fastapi import FastAPI
 from pydantic import BaseModel
 
@@ -13,7 +12,7 @@ class InitDb(BaseModel):
 
 @app.get("/init-db")
 def init_database_and_vector_store(init_db: InitDb):
-
+    # Iniciando o banco de dados e populando os dados iniciais
     check_api_key(init_db.key)
 
     def init_database_and_vector():

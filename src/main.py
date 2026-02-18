@@ -1,9 +1,23 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from utils.check_key import check_api_key
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:3000",  # seu front local
+    "finance-app-kappa-two.vercel.app",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
 
 
 class InitDb(BaseModel):

@@ -73,5 +73,4 @@ def finance_ai_question(question: FinanceQuestion):
         )
 
         span.update_trace(name="user-question", output=resp["answer"])
-        print("AI:", resp["answer"])
         return {"message": resp["answer"]}

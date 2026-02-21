@@ -7,6 +7,7 @@ from langgraph.graph import StateGraph
 from engine.agents.answer_agent import AnswerAgent
 from engine.agents.routing_agent import RoutingAgent
 from engine.agents.sql_agent import SqlAgent
+from engine.agents.synthesis_agent import SynthesisAgent
 from rag.retriever import Retriever
 from rag.vector import rebuild_vectorstore_from_sql
 
@@ -23,6 +24,7 @@ class EngineGraph:
         self.answer_agent = AnswerAgent()
         self.sql_agent = SqlAgent()
         self.retriever = Retriever()
+        self.synthesis_agent = SynthesisAgent()
 
     def route_node(self, state: State):
         intent = self.routing_agent.run(state["question"])
@@ -49,6 +51,10 @@ class EngineGraph:
 
         return {"answer": sql_result}
 
+    def synthesis_node(self, state: State):
+        final = self.synthesis_agent.run([state["answer"]])
+        return {"answer": final}
+
     def build_graph(self):
         graph = StateGraph(State)
 
@@ -56,6 +62,7 @@ class EngineGraph:
         graph.add_node("rag", self.retriever_node)
         graph.add_node("answer", self.answer_node)
         graph.add_node("sql", self.sql_node)
+        graph.add_node("synthesis", self.synthesis_node)
 
         graph.set_entry_point("route")
 
@@ -68,11 +75,15 @@ class EngineGraph:
             },
         )
 
+        # RAG → ANSWER → SYNTHESIS
         graph.add_edge("rag", "answer")
+        graph.add_edge("answer", "synthesis")
 
-        # Finais
-        graph.set_finish_point("answer")
-        graph.set_finish_point("sql")
+        # SQL → SYNTHESIS
+        graph.add_edge("sql", "synthesis")
+
+        # FINAL
+        graph.set_finish_point("synthesis")
 
         conn = sqlite3.connect("state.db", check_same_thread=False)
         checkpointer = SqliteSaver(conn)

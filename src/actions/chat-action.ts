@@ -19,7 +19,7 @@ export async function chatAction(
   if (!question) return { chatInput: "", botResponse: "" };
 
   try {
-    const apiUrl = process.env.API_LOCAL_URL || "";
+    const apiUrl = process.env.API_URL || "";
     const response = await fetch(`${apiUrl}/finance-ai`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

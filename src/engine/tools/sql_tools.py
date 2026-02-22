@@ -327,34 +327,6 @@ def criar_ou_buscar_chat_tool(titulo: str, chat_id: int = None):
         db.close()
 
 
-# @tool
-# def buscar_historico_chat_tool(chat_id: int):
-#     """
-#     Busca todas as mensagens de um chat específico pelo seu ID.
-#     Retorna uma lista de mensagens para reconstruir o contexto.
-#     """
-#     db = SessionLocal()
-#     try:
-#         mensagens = (
-#             db.query(Message)
-#             .filter(Message.chat_id == chat_id)
-#             .order_by(Message.criado_em.asc())
-#             .all()
-#         )
-#         return json.dumps(
-#             [
-#                 {
-#                     "role": m.role,
-#                     "content": m.content,
-#                     "criado_em": m.criado_em.isoformat(),
-#                 }
-#                 for m in mensagens
-#             ]
-#         )
-#     finally:
-#         db.close()
-
-
 @tool
 def salvar_turno_conversa_tool(chat_id: int, question: str, answer: str):
     """

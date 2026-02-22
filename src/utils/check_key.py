@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 
 
-def check_api_key(key):
+def check_api_key(key: str):
     from config.secrets import Secrets
 
     if key != Secrets.API_KEY:

@@ -48,6 +48,7 @@ class FinanceQuestion(BaseModel):
     question: str
     key: str
     chat_history: list[str]
+    chat_id: int | None = None
 
 
 # cd src
@@ -72,9 +73,57 @@ def finance_ai_question(finance_question: FinanceQuestion):
             {
                 "question": finance_question.question,
                 "chat_history": finance_question.chat_history,
+                "chat_id": finance_question.chat_id,
             },
             config={"thread_id": "user-thread", "callbacks": [langfuse_handler]},
         )
 
         span.update_trace(name="user-question", output=resp["answer"])
-        return {"message": resp["answer"]}
+        return {"message": resp["answer"], "chat_id": resp["chat_id"]}
+
+
+@app.get("/finance-ai/chats")
+def chats(key: str):
+    check_api_key(key)
+    from db.database import SessionLocal
+    from models.finance_models import Chat
+
+    db = SessionLocal()
+    db = SessionLocal()
+    try:
+        chats = db.query(Chat).order_by(Chat.criado_em.desc()).all()
+        return {"status": "success", "count": len(chats), "data": chats}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+    finally:
+        db.close()
+
+
+@app.get("/finance-ai/messages")
+def get_messages(chat_id: str, key: str):
+    check_api_key(key)
+    from fastapi import HTTPException
+
+    from db.database import SessionLocal
+    from models.finance_models import Message
+
+    db = SessionLocal()
+    try:
+        messages = (
+            db.query(Message)
+            .filter(Message.chat_id == chat_id)
+            .order_by(Message.criado_em.desc())
+            .all()
+        )
+
+        if not messages:
+            raise HTTPException(status_code=404, detail="Chat não encontrado")
+
+        return {"status": "success", "count": len(messages), "data": messages}
+
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+    finally:
+        db.close()

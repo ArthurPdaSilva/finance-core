@@ -1,4 +1,5 @@
 from langchain.agents import create_agent
+from langchain_core.messages import HumanMessage, SystemMessage
 
 from engine.prompts import GET_ANSWER_AGENT_PROMPT
 from utils.llm import make_llm
@@ -11,10 +12,19 @@ class AnswerAgent:
         # Nenhuma tool é usada aqui — esse agente só interpreta
         self.agent = create_agent(model=self.llm, tools=[])
 
-    def run(self, question: str, docs: list[str]):
+    def run(self, question: str, docs: list[str], chat_history: list):
+
         context = "\n\n".join(docs)
 
-        prompt = GET_ANSWER_AGENT_PROMPT(question=question, context=context)
+        system_prompt = GET_ANSWER_AGENT_PROMPT(question=question, context=context)
 
-        result = self.llm.invoke(prompt)
-        return result.content
+        result = self.agent.invoke(
+            {
+                "messages": [
+                    *chat_history,
+                    SystemMessage(content=system_prompt),
+                    HumanMessage(content=question),
+                ]
+            }
+        )
+        return result["messages"][-1].content

@@ -13,10 +13,12 @@ class RoutingAgent:
 
         self.agent = create_agent(model=self.llm, tools=[])
 
-    def run(self, query: str):
+    def run(self, query: str, chat_history=list):
+
         resp = self.agent.invoke(
             {
                 "messages": [
+                    *chat_history,
                     self.system,
                     HumanMessage(content=query),
                 ]

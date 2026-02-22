@@ -31,12 +31,13 @@ class SqlAgent:
             ],
         )
 
-    def run(self, question: str):
+    def run(self, question: str, chat_history: list):
         system_prompt = SQL_AGENT_PROMPT
 
         result = self.agent.invoke(
             {
                 "messages": [
+                    *chat_history,
                     SystemMessage(content=system_prompt),
                     HumanMessage(content=question),
                 ]

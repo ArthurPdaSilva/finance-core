@@ -10,12 +10,14 @@ from engine.agents.sql_agent import SqlAgent
 from engine.agents.synthesis_agent import SynthesisAgent
 from rag.retriever import Retriever
 from rag.vector import rebuild_vectorstore_from_sql
+from utils.parse_history import parse_history
 
 
 class State(TypedDict):
     question: str
     answer: str
     docs: List[Any]
+    chat_history: List[str]
 
 
 class EngineGraph:
@@ -26,8 +28,12 @@ class EngineGraph:
         self.retriever = Retriever()
         self.synthesis_agent = SynthesisAgent()
 
+    def get_history_formatted(self, state: State):
+        return parse_history(state["chat_history"])
+
     def route_node(self, state: State):
-        intent = self.routing_agent.run(state["question"])
+        history = self.get_history_formatted(state)
+        intent = self.routing_agent.run(state["question"], history)
         return {"intent": intent}
 
     def retriever_node(self, state: State):
@@ -38,16 +44,15 @@ class EngineGraph:
         return {"docs": docs}
 
     def answer_node(self, state: State):
+        history = self.get_history_formatted(state)
         final_answer = self.answer_agent.run(
-            question=state["question"],
-            docs=state["docs"],
+            question=state["question"], docs=state["docs"], chat_history=history
         )
         return {"answer": final_answer}
 
     def sql_node(self, state: State):
-        sql_result = self.sql_agent.run(
-            state["question"],
-        )
+        history = self.get_history_formatted(state)
+        sql_result = self.sql_agent.run(state["question"], history)
 
         return {"answer": sql_result}
 

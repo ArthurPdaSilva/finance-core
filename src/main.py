@@ -47,18 +47,19 @@ def init_database_and_vector_store(init_db: InitDb):
 class FinanceQuestion(BaseModel):
     question: str
     key: str
+    chat_history: list[str]
 
 
 # cd src
 # uvicorn main:app --reload
 @app.post("/finance-ai")
-def finance_ai_question(question: FinanceQuestion):
+def finance_ai_question(finance_question: FinanceQuestion):
     from langfuse import get_client
     from langfuse.langchain import CallbackHandler
 
     from engine.engine_graph import EngineGraph
 
-    check_api_key(question.key)
+    check_api_key(finance_question.key)
 
     engine = EngineGraph()
     graph = engine.build_graph()
@@ -66,9 +67,12 @@ def finance_ai_question(question: FinanceQuestion):
     langfuse = get_client()
 
     with langfuse.start_as_current_span(name="user-question") as span:
-        span.update_trace(name="user-question", input=question)
+        span.update_trace(name="user-question", input=finance_question.question)
         resp = graph.invoke(
-            {"question": question.question},
+            {
+                "question": finance_question.question,
+                "chat_history": finance_question.chat_history,
+            },
             config={"thread_id": "user-thread", "callbacks": [langfuse_handler]},
         )
 

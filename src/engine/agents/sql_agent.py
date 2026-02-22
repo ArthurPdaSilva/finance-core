@@ -32,7 +32,7 @@ class SqlAgent:
         )
 
     def run(self, question: str, chat_history: list):
-        system_prompt = SQL_AGENT_PROMPT
+        system_prompt = SQL_AGENT_PROMPT.replace("{{user_input}}", question)
 
         result = self.agent.invoke(
             {

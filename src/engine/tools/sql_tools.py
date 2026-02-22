@@ -4,7 +4,13 @@ from langchain.tools import tool
 from sqlalchemy import func
 
 from db.database import SessionLocal
-from models.finance_models import RegistroFinanceiro, TipoTransacao, Usuario
+from models.finance_models import (
+    Chat,
+    Message,
+    RegistroFinanceiro,
+    TipoTransacao,
+    Usuario,
+)
 
 # ==========================================================
 #                 REGISTROS FINANCEIROS
@@ -215,11 +221,6 @@ def alterar_usuario_do_registro_por_nome_tool(nome: str, novo_usuario_nome: str)
 # ==========================================================
 
 
-# ==========================================================
-#                         USUÁRIOS
-# ==========================================================
-
-
 @tool
 def add_usuario_tool(nome: str, salario: float):
     """
@@ -293,3 +294,83 @@ def remover_usuario_por_nome_tool(nome: str):
     db.close()
 
     return "Usuário removido com sucesso."
+
+
+# ==========================================================
+#                        CHAT
+# ==========================================================
+
+
+@tool
+def criar_ou_buscar_chat_tool(titulo: str, chat_id: int = None):
+    """
+    Cria um novo chat ou retorna um existente.
+    Se chat_id for fornecido, tenta buscar; se nulo, cria um novo com o título.
+    """
+    db = SessionLocal()
+    try:
+        if chat_id:
+            chat = db.query(Chat).filter(Chat.id == chat_id).first()
+            if chat:
+                return json.dumps(
+                    {"chat_id": chat.id, "titulo": chat.titulo, "status": "existente"}
+                )
+
+        novo_chat = Chat(titulo=titulo)
+        db.add(novo_chat)
+        db.commit()
+        db.refresh(novo_chat)
+        return json.dumps(
+            {"chat_id": novo_chat.id, "titulo": novo_chat.titulo, "status": "criado"}
+        )
+    finally:
+        db.close()
+
+
+# @tool
+# def buscar_historico_chat_tool(chat_id: int):
+#     """
+#     Busca todas as mensagens de um chat específico pelo seu ID.
+#     Retorna uma lista de mensagens para reconstruir o contexto.
+#     """
+#     db = SessionLocal()
+#     try:
+#         mensagens = (
+#             db.query(Message)
+#             .filter(Message.chat_id == chat_id)
+#             .order_by(Message.criado_em.asc())
+#             .all()
+#         )
+#         return json.dumps(
+#             [
+#                 {
+#                     "role": m.role,
+#                     "content": m.content,
+#                     "criado_em": m.criado_em.isoformat(),
+#                 }
+#                 for m in mensagens
+#             ]
+#         )
+#     finally:
+#         db.close()
+
+
+@tool
+def salvar_turno_conversa_tool(chat_id: int, question: str, answer: str):
+    """
+    Salva o par pergunta (user) e resposta (assistant) de uma vez no chat.
+    """
+    db = SessionLocal()
+    try:
+        msg_user = Message(chat_id=chat_id, role="user", content=question)
+        msg_ai = Message(chat_id=chat_id, role="assistant", content=answer)
+
+        db.add_all([msg_user, msg_ai])  # Salva ambos na mesma transação
+        db.commit()
+
+        return json.dumps({"status": "turno salvo", "chat_id": chat_id})
+    except Exception as e:
+        db.rollback()
+        return json.dumps({"status": "erro", "message": str(e)})
+    finally:
+        db.close()

@@ -1,9 +1,28 @@
+from datetime import datetime, timezone
 import enum
 
-from sqlalchemy import Column, Enum, Float, ForeignKey, Integer, String
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
+
+
+class Chat(Base):
+    __tablename__ = "chats"
+    id = Column(Integer, primary_key=True)
+    titulo = Column(String, nullable=False)
+    criado_em = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class Message(Base):
+    __tablename__ = "messages"
+    id = Column(Integer, primary_key=True)
+    chat_id = Column(Integer, ForeignKey("chats.id"))
+    role = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    criado_em = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    chat = relationship("Chat", backref="messages")
 
 
 class Usuario(Base):

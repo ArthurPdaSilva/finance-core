@@ -1,3 +1,5 @@
+import json
+
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -8,23 +10,19 @@ from utils.llm import make_llm
 class RoutingAgent:
     def __init__(self):
         self.llm = make_llm()
-
-        self.system = SystemMessage(content=ROUTING_AGENT_PROMPT)
-
         self.agent = create_agent(model=self.llm, tools=[])
 
-    def run(self, query: str, chat_history=list):
+    def run(self, question: str, chat_history=list):
+        system_prompt = ROUTING_AGENT_PROMPT.replace("{{user_input}}", question)
 
-        resp = self.agent.invoke(
+        result = self.agent.invoke(
             {
                 "messages": [
                     *chat_history,
-                    self.system,
-                    HumanMessage(content=query),
+                    SystemMessage(content=system_prompt),
+                    HumanMessage(content=question),
                 ]
             }
         )
 
-        import json
-
-        return json.loads(resp["messages"][-1].content)["intent"]
+        return json.loads(result["messages"][-1].content)["intent"]

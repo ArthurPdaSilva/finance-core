@@ -13,11 +13,15 @@ DB_NAME = Secrets.DATABASE_NAME or "database.sqlite3"
 DROP_OLD_TABLES = [
     "DROP TABLE IF EXISTS contas_mensais",
     "DROP TABLE IF EXISTS dividas",
+    # Novas para histórico de chat:
+    "DROP TABLE IF EXISTS messages",
+    "DROP TABLE IF EXISTS chats",
 ]
 
 # ---------------------------------------------------------
-# Criação das tabelas (somente exemplo – edite se já existem)
+# Criação das tabelas
 # ---------------------------------------------------------
+
 CREATE_TABLES = [
     """
     CREATE TABLE IF NOT EXISTS usuarios (
@@ -30,16 +34,35 @@ CREATE_TABLES = [
     CREATE TABLE IF NOT EXISTS registros_financeiros (
         id INTEGER PRIMARY KEY,
         usuario_id INTEGER NOT NULL,
-        tipo TEXT NOT NULL CHECK(tipo IN ('conta', 'divida')),                -- conta | divida
+        tipo TEXT NOT NULL CHECK(tipo IN ('conta', 'divida')),
         nome TEXT NOT NULL,
-        valor_por_parcela REAL NOT NULL,               -- valor da conta ou parcela
-        valor_total REAL,                  -- apenas dívidas
-        parcelas_restantes INTEGER,        -- apenas dívidas
+        valor_por_parcela REAL NOT NULL,
+        valor_total REAL,
+        parcelas_restantes INTEGER,
         FOREIGN KEY(usuario_id) REFERENCES usuarios(id)
     )
     """,
+    # -----------------------------------------------------
+    #  NOVAS TABELAS: CHAT + MESSAGES
+    # -----------------------------------------------------
+    """
+    CREATE TABLE IF NOT EXISTS chats (
+        id INTEGER PRIMARY KEY,
+        titulo TEXT NOT NULL,
+        criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY,
+        chat_id INTEGER NOT NULL,
+        role TEXT NOT NULL CHECK(role IN ('user', 'assistant', 'system')),
+        content TEXT NOT NULL,
+        criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(chat_id) REFERENCES chats(id)
+    )
+    """,
 ]
-
 
 # ---------------------------------------------------------
 # Funções utilitárias

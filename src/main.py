@@ -116,9 +116,6 @@ def get_messages(chat_id: str, key: str):
             .all()
         )
 
-        if not messages:
-            raise HTTPException(status_code=404, detail="Chat não encontrado")
-
         return {"status": "success", "count": len(messages), "data": messages}
 
     except HTTPException as he:

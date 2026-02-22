@@ -43,8 +43,6 @@ export async function chatAction(
       body: JSON.stringify(sendMessage),
     });
 
-    console.log(response);
-
     if (!response.ok) {
       return {
         chatInput: "",

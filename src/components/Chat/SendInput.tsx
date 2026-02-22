@@ -6,7 +6,7 @@ import { useMessage } from "@/MessageContext";
 import { useActionState, useEffect, useRef, useState } from "react";
 
 export const SendInput = () => {
-  const { setMessages } = useMessage();
+  const { messages, setMessages } = useMessage();
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -42,6 +42,8 @@ export const SendInput = () => {
       onKeyDown={() => inputRef.current?.focus()}
       className=" w-[80vw] md:w-[40vw]  flex items-end gap-4 m-auto rounded-xl border-[#2A4A7A] bg-[#0F1A2A]/40 px-5 py-4"
     >
+      <input type="hidden" name="messages" value={JSON.stringify(messages)} />
+
       <textarea
         ref={inputRef}
         id="input"

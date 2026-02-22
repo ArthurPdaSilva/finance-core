@@ -6,6 +6,7 @@ export type Message = {
 export type SendMessage = {
   question: string;
   key: string;
+  chat_history: string[];
 };
 
 export type BotResponse = {

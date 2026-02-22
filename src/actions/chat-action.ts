@@ -1,6 +1,6 @@
 "use server";
 
-import type { BotResponse, SendMessage } from "@/types";
+import type { BotResponse, Message, SendMessage } from "@/types";
 import { cookies } from "next/headers";
 
 type ChatActionState = {
@@ -13,17 +13,31 @@ export async function chatAction(
   formData: FormData,
 ): Promise<ChatActionState> {
   const input = formData.get("chat-input");
+  const messages = formData.get("messages")?.toString() || "";
   const question = input?.toString().trim();
   const apiKey = (await cookies()).get("api-key")?.value || "";
 
   if (!question) return { chatInput: "", botResponse: "" };
+  const chatHistory = messages
+    ? (JSON.parse(messages) as Message[]).reverse()
+    : [];
+
+  const chatHistoryStrings = chatHistory.map(
+    (msg) => `${msg.sender}: ${msg.text}`,
+  );
+
+  const sendMessage: SendMessage = {
+    question,
+    key: apiKey,
+    chat_history: chatHistoryStrings,
+  };
 
   try {
     const apiUrl = process.env.API_URL || "";
     const response = await fetch(`${apiUrl}/finance-ai`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ key: apiKey, question } as SendMessage),
+      body: JSON.stringify(sendMessage),
     });
 
     if (!response.ok) {

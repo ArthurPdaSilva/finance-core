@@ -90,13 +90,13 @@ export const Sidebar = () => {
           <span className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
             Chats
           </span>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col">
             {fakeChats.map(({ id, title }) => {
               return (
                 <button
                   key={id}
                   type="button"
-                  className="w-full cursor-pointer px-3 py-2 h-14 text-gray-600 hover:bg-gray-50 rounded-lg group transition-colors text-sm font-medium text-left line-clamp-1 text-ellipsis overflow-hidden"
+                  className="w-full cursor-pointer px-3 h-14 text-gray-600 hover:bg-gray-50 rounded-lg group transition-colors text-sm font-medium text-ellipsis truncate text-left"
                 >
                   {title}
                 </button>

@@ -6,6 +6,7 @@ from langgraph.graph import StateGraph
 
 from engine.agents.answer_agent import AnswerAgent
 from engine.agents.chat_manager_agent import ChatManagerAgent
+from engine.agents.greeting_agent import GreetingAgent
 from engine.agents.routing_agent import RoutingAgent
 from engine.agents.sql_agent import SqlAgent
 from engine.agents.synthesis_agent import SynthesisAgent
@@ -27,6 +28,7 @@ class EngineGraph:
         self.routing_agent = RoutingAgent()
         self.answer_agent = AnswerAgent()
         self.sql_agent = SqlAgent()
+        self.greeting_agent = GreetingAgent()
         self.retriever = Retriever()
         self.synthesis_agent = SynthesisAgent()
         self.chat_manager_agent = ChatManagerAgent()
@@ -63,6 +65,12 @@ class EngineGraph:
         final = self.synthesis_agent.run([state["answer"]])
         return {"answer": final}
 
+    def greeting_node(self, state: State):
+        history = self.get_history_formatted(state)
+        result = self.greeting_agent.run(state["question"], history)
+
+        return {"answer": result}
+
     def chat_manager_node(self, state: State):
         history = self.get_history_formatted(state)
         chat_id = self.chat_manager_agent.run(
@@ -78,16 +86,14 @@ class EngineGraph:
         graph.add_node("answer", self.answer_node)
         graph.add_node("sql", self.sql_node)
         graph.add_node("synthesis", self.synthesis_node)
+        graph.add_node("greeting", self.greeting_node)
 
         graph.set_entry_point("route")
 
         graph.add_conditional_edges(
             "route",
             lambda s: s["intent"],
-            {
-                "rag": "rag",
-                "sql": "sql",
-            },
+            {"rag": "rag", "sql": "sql", "greeting": "greeting"},
         )
 
         # RAG → ANSWER → SYNTHESIS
@@ -97,8 +103,11 @@ class EngineGraph:
         # SQL → SYNTHESIS
         graph.add_edge("sql", "synthesis")
 
-        # synthesis sempre vai pro chat_manager
+        # SYNTHESIS → CHAT_MANAGER
         graph.add_edge("synthesis", "chat_manager")
+
+        # GREETING → CHAT_MANAGER
+        graph.add_edge("greeting", "chat_manager")
 
         # FINAL
         graph.set_finish_point("chat_manager")

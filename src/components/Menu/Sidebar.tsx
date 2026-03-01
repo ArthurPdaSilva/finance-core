@@ -7,7 +7,7 @@ type SidebarProps = {
   children: React.ReactNode;
 };
 
-export const Sidebar = async ({ children }: SidebarProps) => {
+export const Sidebar = ({ children }: SidebarProps) => {
   const { isOpen, toggleMenu } = useMenu();
 
   return (

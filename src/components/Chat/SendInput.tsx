@@ -61,7 +61,6 @@ export const SendInput = () => {
         ref={inputRef}
         id="input"
         name="chat-input"
-        defaultValue={state.chatInput}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         disabled={isPending}

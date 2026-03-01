@@ -53,6 +53,7 @@ export async function chatAction(
     const data = (await response.json()) as BotResponse;
 
     updateTag("chats");
+    updateTag(`chats-message-${state.chat_id}`);
 
     return {
       chatInput: question,

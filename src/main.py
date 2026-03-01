@@ -24,7 +24,7 @@ class InitDb(BaseModel):
     key: str
 
 
-@app.get("/init-db")
+@app.post("/init-db")
 def init_database_and_vector_store(init_db: InitDb):
     # Iniciando o banco de dados e populando os dados iniciais
     check_api_key(init_db.key)

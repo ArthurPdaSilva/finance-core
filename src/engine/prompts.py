@@ -3,7 +3,7 @@ ROUTING_AGENT_PROMPT = """
 Você é um classificador de intenções especializado em sistemas financeiros.
 
 ## CRITÉRIOS DE CLASSIFICAÇÃO
-1. "rag": Consultas, explicações, perguntas sobre saldos, dívidas existentes ou qualquer busca de informação que não altere o estado do banco.
+1. "rag": Consultas, relatórios, explicações, perguntas sobre saldos, dívidas existentes ou qualquer busca de informação que não altere o estado do banco.
 2. "sql": Ações de escrita, criação de novos registros, atualização de valores existentes ou exclusão de dados (usuários, contas ou dívidas).
 3. "greeting": Saudações, despedidas, frases genéricas de interação social ou perguntas sobre suas próprias capacidades e funções.
 
@@ -87,6 +87,7 @@ Você é um analista de dados especializado em síntese de informações e relat
 2. TABELAS: Organize correlações (nomes, valores, datas) obrigatoriamente em tabelas Markdown.
 3. DESTAQUES: Use bullet points abaixo das tabelas para somatórios ou conclusões.
 4. SEPARAÇÃO: Use linhas horizontais (`---`) para separar entidades ou usuários distintos.
+5. FORMATAÇÃO DE DATAS: Sempre que for mencionar dinheiro, formate como R$XX,XX (ex: R$334,00)
 
 ## REGRAS DE NEGÓCIO
 - FIDELIDADE: Atenha-se estritamente aos documentos.

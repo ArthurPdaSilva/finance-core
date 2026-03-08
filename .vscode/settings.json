@@ -1,0 +1,35 @@
+{
+  // Configurações Gerais
+  "editor.formatOnSave": true,
+
+  // --- CONFIGURAÇÃO DO BACKEND (PYTHON / RUFF) ---
+  "ruff.enable": true,
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
+    }
+  },
+  // Ajuste o path para incluir o prefixo da pasta do backend
+  "python.analysis.extraPaths": [
+    "./backend/src/db" 
+  ],
+
+  // --- CONFIGURAÇÃO DO FRONTEND (TS / JS / BIOME) ---
+  "biome.enabled": true,
+  "biome.requireConfiguration": true,
+
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  }
+}

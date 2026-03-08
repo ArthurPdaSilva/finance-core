@@ -12,5 +12,5 @@ def search_finance(query: str):
         query: Consulta em linguagem natural usada para buscar informações financeiras relevantes.
     """
     vs = get_vectorstore()
-    docs = vs.similarity_search(query, k=5)
+    docs = vs.similarity_search(query, k=30)
     return json.dumps([d.page_content for d in docs])

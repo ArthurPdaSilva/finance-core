@@ -62,7 +62,8 @@ class EngineGraph:
         return {"answer": sql_result}
 
     def synthesis_node(self, state: State):
-        final = self.synthesis_agent.run([state["answer"]])
+        history = self.get_history_formatted(state)
+        final = self.synthesis_agent.run(state["question"], [state["answer"]], history)
         return {"answer": final}
 
     def greeting_node(self, state: State):

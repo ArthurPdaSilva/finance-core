@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "debugpy",
+      "name": "Run Backend",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "main:app",
+        "--reload"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "cwd": "${workspaceFolder}/backend/src"
+    },
+    {
+      "type": "node-terminal",
+      "name": "Run Frontend",
+      "request": "launch",
+      "command": "pnpm dev",
+      "cwd": "${workspaceFolder}/frontend"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Run Fullstack",
+      "configurations": [
+        "Run Backend",
+        "Run Frontend"
+      ]
+    }
+  ]
+}

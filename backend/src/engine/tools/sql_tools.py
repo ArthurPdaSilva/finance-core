@@ -316,7 +316,17 @@ def criar_ou_buscar_chat_tool(titulo: str, chat_id: int = None):
                     {"chat_id": chat.id, "titulo": chat.titulo, "status": "existente"}
                 )
 
+        if db.query(Chat).filter(Chat.titulo == titulo).first():
+            return json.dumps(
+                {
+                    "chat_id": None,
+                    "titulo": titulo,
+                    "status": "Chat com esse nome já existe",
+                }
+            )
+
         novo_chat = Chat(titulo=titulo)
+
         db.add(novo_chat)
         db.commit()
         db.refresh(novo_chat)

@@ -10,9 +10,9 @@
 - **Localização:** [backend/src/main.py](backend/src/main.py#L1-L80)
 - **Instalar dependências:**
 	- Crie e ative um virtualenv:
-		`python -m venv .venv` (Windows: `.\.venv\Scripts\Activate.ps1` ou `.\.venv\Scripts\activate`)
-	- Atualize pip e instale o pacote do projeto a partir do `pyproject.toml`:
-		`python -m pip install --upgrade pip` then `python -m pip install -e ./backend`
+		`uv venv` (Windows: `.venv\Scripts\activate`)
+	- Atualize o uv e instale o pacote do projeto a partir do `pyproject.toml`:
+		`uv sync`
 - **Variáveis de ambiente:** copie ou crie um arquivo `.env` dentro de `backend/` com pelo menos:
 	- `OPENAI_API_KEY` — sua chave OpenAI
 	- `API_KEY` — chave para usar o endpoint `/init-db` e proteger a API

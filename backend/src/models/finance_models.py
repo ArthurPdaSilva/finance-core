@@ -9,15 +9,16 @@ Base = declarative_base()
 
 class Chat(Base):
     __tablename__ = "chats"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    token = Column(String, unique=True)
     titulo = Column(String, nullable=False)
     criado_em = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class Message(Base):
     __tablename__ = "messages"
-    id = Column(Integer, primary_key=True)
-    chat_id = Column(Integer, ForeignKey("chats.id"))
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    chat_token = Column(String, ForeignKey("chats.token"), nullable=False)
     role = Column(String, nullable=False)
     content = Column(Text, nullable=False)
     criado_em = Column(DateTime, default=lambda: datetime.now(timezone.utc))

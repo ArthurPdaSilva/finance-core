@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 
 type ChatActionState = {
   chatInput: string;
-  chat_id?: number;
+  chat_token?: string;
   botResponse: string;
 };
 
@@ -32,7 +32,7 @@ export async function chatAction(
     question,
     key: apiKey,
     chat_history: chatHistoryStrings,
-    ...(state.chat_id ? { chat_id: state.chat_id } : {}),
+    ...(state.chat_token ? { chat_token: state.chat_token } : {}),
   };
 
   try {
@@ -53,12 +53,12 @@ export async function chatAction(
     const data = (await response.json()) as BotResponse;
 
     updateTag("chats");
-    updateTag(`chats-message-${state.chat_id}`);
+    updateTag(`chats-message-${state.chat_token}`);
 
     return {
       chatInput: question,
       botResponse: data.message,
-      chat_id: data.chat_id,
+      chat_token: data.chat_token,
     };
   } catch (error) {
     console.error("Erro na requisição:", error);

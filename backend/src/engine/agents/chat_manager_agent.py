@@ -20,8 +20,8 @@ class ChatManagerAgent:
             ],
         )
 
-    def run(self, question: str, answer: str, chat_id, chat_history: list):
-        user_input = f"Chat ID atual: {chat_id if chat_id else 'Nulo'}. Pergunta: {question}. Resposta: {answer}."
+    def run(self, question: str, answer: str, chat_token: str, chat_history: list):
+        user_input = f"Chat Token atual: {chat_token if chat_token else 'Nulo'}. Pergunta: {question}. Resposta: {answer}."
 
         system_prompt = CHAT_MANAGER_PROMPT.replace("{{user_input}}", user_input)
 
@@ -41,4 +41,4 @@ class ChatManagerAgent:
         # transforma em dict
         data = json.loads(final_content)
 
-        return data["chat_id"]
+        return data["chat_token"]

@@ -1,4 +1,5 @@
 import json
+import uuid
 
 from langchain.tools import tool
 from sqlalchemy import func
@@ -302,55 +303,56 @@ def remover_usuario_por_nome_tool(nome: str):
 
 
 @tool
-def criar_ou_buscar_chat_tool(titulo: str, chat_id: int | None = None):
+def criar_ou_buscar_chat_tool(titulo: str, chat_token: str | None = None):
     """
     Cria um novo chat ou retorna um existente.
-    Se chat_id for fornecido, tenta buscar; se nulo, cria um novo com o título.
+    Se chat_token for fornecido, tenta buscar; se nulo, cria um novo com o título.
     """
     db = SessionLocal()
     try:
-        if chat_id:
-            chat = db.query(Chat).filter(Chat.id == chat_id).first()
+        if chat_token:
+            chat = db.query(Chat).filter(Chat.token == chat_token).first()
             if chat:
                 return json.dumps(
-                    {"chat_id": chat.id, "titulo": chat.titulo, "status": "existente"}
+                    {"token": chat.token, "titulo": chat.titulo, "status": "existente"}
                 )
 
         if db.query(Chat).filter(Chat.titulo == titulo).first():
             return json.dumps(
                 {
-                    "chat_id": None,
+                    "chat_token": None,
                     "titulo": titulo,
                     "status": "Chat com esse nome já existe",
                 }
             )
 
-        novo_chat = Chat(titulo=titulo)
+        token = str(uuid.uuid4())
+        novo_chat = Chat(titulo=titulo, token=token)
 
         db.add(novo_chat)
         db.commit()
         db.refresh(novo_chat)
         return json.dumps(
-            {"chat_id": novo_chat.id, "titulo": novo_chat.titulo, "status": "criado"}
+            {"chat_token": token, "titulo": novo_chat.titulo, "status": "criado"}
         )
     finally:
         db.close()
 
 
 @tool
-def salvar_turno_conversa_tool(chat_id: int, question: str, answer: str):
+def salvar_turno_conversa_tool(chat_token: str, question: str, answer: str):
     """
     Salva o par pergunta (user) e resposta (assistant) de uma vez no chat.
     """
     db = SessionLocal()
     try:
-        msg_user = Message(chat_id=chat_id, role="user", content=question)
-        msg_ai = Message(chat_id=chat_id, role="assistant", content=answer)
+        msg_user = Message(chat_token=chat_token, role="user", content=question)
+        msg_ai = Message(chat_token=chat_token, role="assistant", content=answer)
 
         db.add_all([msg_user, msg_ai])  # Salva ambos na mesma transação
         db.commit()
 
-        return json.dumps({"status": "turno salvo", "chat_id": chat_id})
+        return json.dumps({"status": "turno salvo", "token": chat_token})
     except Exception as e:
         db.rollback()
         return json.dumps({"status": "erro", "message": str(e)})

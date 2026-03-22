@@ -48,6 +48,7 @@ CREATE_TABLES = [
     """
     CREATE TABLE IF NOT EXISTS chats (
         id INTEGER PRIMARY KEY,
+        token TEXT UNIQUE NOT NULL,
         titulo TEXT NOT NULL,
         criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
@@ -55,11 +56,11 @@ CREATE_TABLES = [
     """
     CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY,
-        chat_id INTEGER NOT NULL,
+        chat_token TEXT NOT NULL,
         role TEXT NOT NULL CHECK(role IN ('user', 'assistant', 'system')),
         content TEXT NOT NULL,
         criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(chat_id) REFERENCES chats(id)
+        FOREIGN KEY(chat_token) REFERENCES chats(token)
     )
     """,
 ]

@@ -20,7 +20,7 @@ class State(TypedDict):
     answer: str
     docs: List[Any]
     chat_history: List[str]
-    chat_id: int | None
+    chat_token: int | None
 
 
 class EngineGraph:
@@ -74,10 +74,10 @@ class EngineGraph:
 
     def chat_manager_node(self, state: State):
         history = self.get_history_formatted(state)
-        chat_id = self.chat_manager_agent.run(
-            state["question"], state["answer"], state["chat_id"], history
+        chat_token = self.chat_manager_agent.run(
+            state["question"], state["answer"], state["chat_token"], history
         )
-        return {"chat_id": chat_id}
+        return {"chat_token": chat_token}
 
     def build_graph(self):
         graph = StateGraph(State)

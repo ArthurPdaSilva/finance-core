@@ -24,16 +24,16 @@ export async function getChats(): Promise<ChatResponse> {
   return json;
 }
 
-export async function getMessages(chatId: string): Promise<MessageResponse> {
+export async function getMessages(token: string): Promise<MessageResponse> {
   const apiKey = (await cookies()).get("api-key")?.value || "";
   const urlSafeKey = encodeURIComponent(apiKey);
 
   const res = await fetch(
-    `${process.env.API_URL}/finance-ai/messages?key=${urlSafeKey}&chat_id=${chatId}`,
+    `${process.env.API_URL}/finance-ai/messages?key=${urlSafeKey}&token=${token}`,
     {
       method: "GET",
       next: {
-        tags: ["chat-messages", `chats-message-${chatId}`],
+        tags: ["chat-messages", `chats-message-${token}`],
         revalidate: Number(1800),
       },
     },

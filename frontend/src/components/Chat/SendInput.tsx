@@ -12,21 +12,21 @@ export const SendInput = () => {
   const pathname = usePathname();
   const router = useRouter();
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const [, base, id] = pathname.split("/");
+  const [, base, token] = pathname.split("/");
 
   const initialState = {
     chatInput: "",
     botResponse: "",
-    chat_id: base === "chat" && id ? Number(id) : undefined,
+    token: base === "chat" && token ? String(token) : undefined,
   };
   const [state, action, isPending] = useActionState(chatAction, initialState);
 
   useEffect(() => {
-    if (state.chat_id && pathname === "/chat" && !id) {
-      const newUrl = `${pathname}/${state.chat_id}`;
+    if (state.token && pathname === "/chat" && !token) {
+      const newUrl = `${pathname}/${state.token}`;
       router.replace(newUrl);
     }
-  }, [state.chat_id, pathname]);
+  }, [state.token, pathname]);
 
   useEffect(() => {
     if (isPending) {

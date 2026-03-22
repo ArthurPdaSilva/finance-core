@@ -8,12 +8,13 @@ export const metadata: Metadata = {
 };
 
 type ChatIdPageProps = {
-  params: Promise<{ id: string }>;
+  params: Promise<{ token: string }>;
 };
 
+
 export default async function ChatIdPage({ params }: ChatIdPageProps) {
-  const { id } = await params;
-  const { data } = await getMessages(id);
+  const { token } = await params;
+  const { data } = await getMessages(token);
 
   if (data.length === 0) {
     redirect("/chat");

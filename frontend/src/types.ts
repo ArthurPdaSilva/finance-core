@@ -7,23 +7,24 @@ export type SendMessage = {
   question: string;
   key: string;
   chat_history: string[];
-  chat_id?: number;
+  chat_token?: string;
 };
 
 export type BotResponse = {
   message: string;
-  chat_id: number;
+  chat_token: string;
 };
 
 export type Chat = {
   id: number;
   titulo: string;
   criado_em: string;
+  token: string
 };
 
 export type MessageHistory = {
   id: number;
-  chat_id: number;
+  chat_token: string;
   role: "user" | "assistant";
   content: string;
   criado_em: string;

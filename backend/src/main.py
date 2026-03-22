@@ -48,7 +48,7 @@ class FinanceQuestion(BaseModel):
     question: str
     key: str
     chat_history: list[str]
-    chat_id: int | None = None
+    chat_token: str | None = None
 
 
 # cd src
@@ -73,13 +73,13 @@ def finance_ai_question(finance_question: FinanceQuestion):
             {
                 "question": finance_question.question,
                 "chat_history": finance_question.chat_history,
-                "chat_id": finance_question.chat_id,
+                "chat_token": finance_question.chat_token,
             },
             config={"thread_id": "user-thread", "callbacks": [langfuse_handler]},
         )
 
         span.update_trace(name="user-question", output=resp["answer"])
-        return {"message": resp["answer"], "chat_id": resp["chat_id"]}
+        return {"message": resp["answer"], "chat_token": resp["chat_token"]}
 
 
 @app.get("/finance-ai/chats")
@@ -100,7 +100,7 @@ def chats(key: str):
 
 
 @app.get("/finance-ai/messages")
-def get_messages(chat_id: str, key: str):
+def get_messages(chat_token: str, key: str):
     check_api_key(key)
     from fastapi import HTTPException
 
@@ -111,7 +111,7 @@ def get_messages(chat_id: str, key: str):
     try:
         messages = (
             db.query(Message)
-            .filter(Message.chat_id == chat_id)
+            .filter(Message.chat_token == chat_token)
             .order_by(Message.criado_em.desc())
             .all()
         )

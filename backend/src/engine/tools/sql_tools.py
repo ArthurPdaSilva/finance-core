@@ -302,7 +302,7 @@ def remover_usuario_por_nome_tool(nome: str):
 
 
 @tool
-def criar_ou_buscar_chat_tool(titulo: str, chat_id: int = None):
+def criar_ou_buscar_chat_tool(titulo: str, chat_id: int | None = None):
     """
     Cria um novo chat ou retorna um existente.
     Se chat_id for fornecido, tenta buscar; se nulo, cria um novo com o título.

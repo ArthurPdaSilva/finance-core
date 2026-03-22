@@ -7,7 +7,7 @@ from utils.check_key import check_api_key
 app = FastAPI()
 
 origins = [
-    "http://localhost:3000",  # seu front local
+    "http://localhost:3000",
     "https://finance-app-kappa-two.vercel.app",
 ]
 

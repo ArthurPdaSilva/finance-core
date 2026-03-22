@@ -22,11 +22,11 @@ export const SendInput = () => {
   const [state, action, isPending] = useActionState(chatAction, initialState);
 
   useEffect(() => {
-    if (state.token && pathname === "/chat" && !token) {
-      const newUrl = `${pathname}/${state.token}`;
+    if (state.chat_token && pathname === "/chat" && !token) {
+      const newUrl = `${pathname}/${state.chat_token}`;
       router.replace(newUrl);
     }
-  }, [state.token, pathname]);
+  }, [state.chat_token, pathname]);
 
   useEffect(() => {
     if (isPending) {

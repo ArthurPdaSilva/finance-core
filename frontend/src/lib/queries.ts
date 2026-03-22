@@ -29,7 +29,7 @@ export async function getMessages(token: string): Promise<MessageResponse> {
   const urlSafeKey = encodeURIComponent(apiKey);
 
   const res = await fetch(
-    `${process.env.API_URL}/finance-ai/messages?key=${urlSafeKey}&token=${token}`,
+    `${process.env.API_URL}/finance-ai/messages?key=${urlSafeKey}&chat_token=${token}`,
     {
       method: "GET",
       next: {

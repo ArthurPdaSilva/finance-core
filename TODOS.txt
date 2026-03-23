@@ -1,2 +1,2 @@
-TODO (BACKEND):
-- Alterar o add_registro_tool para começar a receber um array
+TODO (FULLSTACK):
+- Criar sistema de autenticação

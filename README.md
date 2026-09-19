@@ -153,11 +153,50 @@ docker compose config -q
 cd backend
 uv lock --check
 uv run ruff check src
+uv run pytest --cov=src --cov-report=term-missing
 
 cd ../frontend
 pnpm exec tsc --noEmit
+pnpm test
 pnpm build
 ```
+
+## Testes e CI/CD
+
+O backend usa `pytest` com cobertura e o frontend usa Vitest. Os testes nao fazem chamadas reais para OpenRouter, OpenAI ou Langfuse; integracoes externas devem ser mockadas.
+
+Para executar as suites separadamente:
+
+```bash
+cd backend
+uv run pytest --cov=src --cov-report=term-missing
+
+cd ../frontend
+pnpm test
+pnpm test:coverage
+```
+
+O workflow de Continuous Integration roda em pull requests e pushes para `main`:
+
+- Ruff, lockfile e testes do backend com PostgreSQL de servico;
+- Biome, TypeScript, testes Vitest e build do frontend;
+- validacao, build e health check do Docker Compose.
+
+Depois que o CI da `main` termina com sucesso, o Continuous Delivery publica no Docker Hub:
+
+- `<DOCKER_USERNAME>/finance-core-backend:latest`;
+- `<DOCKER_USERNAME>/finance-core-backend:<commit-sha>`;
+- `<DOCKER_USERNAME>/finance-core-frontend:latest`;
+- `<DOCKER_USERNAME>/finance-core-frontend:<commit-sha>`.
+
+Configure estes secrets no repositorio GitHub:
+
+| Secret | Uso |
+|---|---|
+| `DOCKER_USERNAME` | Usuario ou organizacao do Docker Hub |
+| `DOCKER_ACCESS_TOKEN` | Access token do Docker Hub com permissao de escrita |
+
+As chaves de OpenRouter, OpenAI, Langfuse e PostgreSQL nao devem ser cadastradas no CI. Elas sao necessarias somente no ambiente de execucao.
 
 ## Seguranca
 

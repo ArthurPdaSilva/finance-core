@@ -53,7 +53,9 @@ export const ClearButton = () => {
             d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673A2.25 2.25 0 0 1 15.916 21.75H8.084A2.25 2.25 0 0 1 5.84 19.673L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .563c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.479-.398m7.5 0v-.916c0-.983-.895-1.75-2-1.75h-3.5c-1.105 0-2 .767-2 1.75V5.03"
           />
         </svg>
-        <span className="text-sm font-medium">{isPending ? 'Apagando...' : 'Apagar Chats'}</span>
+        <span className="text-sm font-medium">
+          {isPending ? "Apagando..." : "Apagar Chats"}
+        </span>
       </button>
     </form>
   );

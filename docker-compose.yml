@@ -16,6 +16,7 @@ services:
       retries: 10
 
   backend:
+    image: finance-core-backend:local
     build:
       context: ./backend
     environment:
@@ -42,6 +43,7 @@ services:
       retries: 10
 
   frontend:
+    image: finance-core-frontend:local
     build:
       context: ./frontend
     environment:

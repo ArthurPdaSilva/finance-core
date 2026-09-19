@@ -77,6 +77,7 @@ Backend:
 cd backend
 uv lock --check
 uv run ruff check src
+uv run pytest --cov=src --cov-report=term-missing
 ```
 
 Frontend:
@@ -84,8 +85,18 @@ Frontend:
 ```bash
 cd frontend
 pnpm exec tsc --noEmit
+pnpm test
 pnpm build
 ```
+
+## Testes e CI/CD
+
+- Backend: pytest, com PostgreSQL de servico no CI e integracoes externas mockadas.
+- Frontend: Vitest; nao fazer chamadas reais para APIs durante os testes.
+- CI: `.github/workflows/continuous-integration.yml` roda em pull requests e pushes para `main`.
+- CD: `.github/workflows/continuous-delivery.yml` publica as imagens apos o CI bem-sucedido da `main`.
+- Docker Hub: usar os secrets `DOCKER_USERNAME` e `DOCKER_ACCESS_TOKEN` no repositorio GitHub.
+- Nunca cadastrar chaves OpenRouter, OpenAI ou Langfuse nos workflows de teste.
 
 ## Workflow
 

@@ -11,11 +11,9 @@ type ChatIdPageProps = {
   params: Promise<{ id: string }>;
 };
 
-
 export default async function ChatIdPage({ params }: ChatIdPageProps) {
   const { id } = await params;
   const { data } = await getMessages(id);
-
 
   if (data.length === 0) {
     redirect("/chat");

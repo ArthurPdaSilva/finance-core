@@ -19,7 +19,7 @@ export type Chat = {
   id: number;
   titulo: string;
   criado_em: string;
-  token: string
+  token: string;
 };
 
 export type MessageHistory = {

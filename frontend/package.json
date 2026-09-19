@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
+    "@next/env": "16.1.6",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

@@ -1,20 +1,16 @@
-import os
-
 from langchain_openai import ChatOpenAI
+
+from config.secrets import Secrets
 
 
 def make_llm():
-    openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+    openrouter_api_key = Secrets.OPENROUTER_API_KEY
     kwargs = {
-        "model": os.getenv(
-            "OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct:free"
-        ),
-        "api_key": openrouter_api_key or os.getenv("OPENAI_API_KEY"),
+        "model": Secrets.OPENROUTER_MODEL,
+        "api_key": openrouter_api_key or Secrets.OPENAI_API_KEY,
     }
 
     if openrouter_api_key:
-        kwargs["base_url"] = os.getenv(
-            "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"
-        )
+        kwargs["base_url"] = Secrets.OPENROUTER_BASE_URL
 
     return ChatOpenAI(**kwargs)

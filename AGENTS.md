@@ -1,32 +1,79 @@
 # Finance Core Development Guide
 
-## Project Layout
+## Visao Geral
 
-- `backend/`: FastAPI, SQLAlchemy, LangGraph, RAG and database seed.
-- `frontend/`: Next.js application and server actions.
-- `docker-compose.yml`: local PostgreSQL, backend, frontend and self-hosted Langfuse orchestration.
+Monorepo de uma aplicacao de analise financeira com API FastAPI, agentes LangGraph, RAG, PostgreSQL, frontend Next.js e observabilidade self-hosted com Langfuse.
 
-## Local Conventions
+O chat usa a API compativel com OpenAI da OpenRouter. O modelo padrao e gratuito para testes simples; embeddings continuam usando OpenAI para o vector store.
 
-- Keep secrets in ignored `.env` files or environment variables.
-- Keep the frontend API URL configurable through `API_URL`.
-- Use `http://backend:8000` for frontend-to-backend calls inside Docker Compose.
-- Use `http://127.0.0.1:8000` when running the frontend outside Docker.
-- Use `http://langfuse-web:3000` for backend-to-Langfuse calls inside Docker Compose.
-- Open the Langfuse dashboard at `http://localhost:3001` from the host.
-- Do not commit generated databases, vector stores, build output or dependencies.
+## Estrutura
 
-## Validation
+```text
+backend/                  # API FastAPI e processamento de IA
+  src/
+    config/               # Carregamento central de configuracoes e Langfuse
+    db/                   # SQLAlchemy, schema e seeds
+    engine/               # Grafo LangGraph, agentes, prompts e tools
+    rag/                  # ChromaDB, embeddings e consultas financeiras
+    utils/                # LLM e utilitarios
 
-Run the Docker stack before changing integration behavior:
+frontend/                 # Aplicacao Next.js e server actions
+  src/
+    actions/              # Chamadas server-side para a API
+    app/                  # Rotas e layouts
+    components/           # Componentes de interface
+    contexts/             # Estado compartilhado do frontend
+
+docker-compose.yml        # PostgreSQL, backend, frontend e Langfuse
+.env.example              # Contrato central de variaveis do ambiente local
+```
+
+## Convencoes
+
+- Python: formatacao e lint com Ruff; imports organizados automaticamente.
+- TypeScript: seguir as convencoes existentes do Next.js e Biome.
+- Variaveis e funcoes de codigo permanecem em ingles; textos da interface podem ser em portugues brasileiro.
+- Manter alteracoes pequenas e evitar compatibilidade retroativa sem necessidade concreta.
+- Nao versionar bancos, vector stores, builds, dependencias ou segredos.
+
+## Configuracao de Ambiente
+
+- O `.env` da raiz e a fonte central de configuracao local do Docker Compose e do backend executado fora do Docker.
+- `.env.example` documenta as variaveis centrais sem valores sensiveis.
+- `backend/.env` e `frontend/.env` nao devem ser usados para novas configuracoes; valores locais existentes devem ser migrados para a raiz.
+- O Next.js carrega o `.env` raiz quando executado fora do Compose.
+- O Compose injeta `API_KEY` e `DOCKER_API_URL` no frontend, mantendo `API_URL` para execucao local no host.
+- Em producao, injetar as variaveis a partir de um secret manager, como Vault, AWS Secrets Manager, GCP Secret Manager, Doppler ou Infisical.
+- A aplicacao deve ler configuracoes por variaveis de ambiente; nao buscar segredos diretamente em um servico remoto.
+- Nunca imprimir o conteudo de arquivos `.env` ou chaves em logs, testes e mensagens de erro.
+
+Variaveis principais:
+
+- `OPENROUTER_API_KEY`, `OPENROUTER_BASE_URL` e `OPENROUTER_MODEL`: chat.
+- `OPENAI_API_KEY`: embeddings usados pelo ChromaDB e inicializacao do vector store.
+- `DATABASE_URL` e variaveis `POSTGRES_*`: banco financeiro.
+- `API_KEY`: autenticacao da API usada pelo frontend.
+- `LANGFUSE_*`: observabilidade e credenciais do Langfuse.
+
+## Integracoes Docker
+
+- Dentro do Compose, o frontend chama `http://backend:8000`.
+- Fora do Compose, o frontend chama `http://127.0.0.1:8000`.
+- Dentro do Compose, o backend chama `http://langfuse-web:3000`.
+- No host, o dashboard do Langfuse fica em `http://localhost:3001`.
+- O endpoint `/init-db` inicializa explicitamente as tabelas, seeds e vector store; ele pode resetar dados financeiros e de chat.
+
+## Validacao
+
+Configuracao e integracao:
 
 ```bash
-docker compose config
+docker compose config -q
 docker compose up --build
 docker compose logs -f langfuse-web langfuse-worker
 ```
 
-For backend changes:
+Backend:
 
 ```bash
 cd backend
@@ -34,16 +81,25 @@ uv lock --check
 uv run ruff check src
 ```
 
-For frontend changes:
+Frontend:
 
 ```bash
 cd frontend
-pnpm typecheck
+pnpm exec tsc --noEmit
 pnpm build
 ```
 
-## Safety
+## Workflow
 
-- Never print or commit the contents of `.env` files.
-- Do not replace local user changes while fixing the project.
-- Keep database initialization explicit through `/init-db`; it resets seeded financial and chat tables.
+1. Ler os arquivos afetados e verificar mudancas locais antes de editar.
+2. Alterar apenas os arquivos necessarios.
+3. Nunca substituir mudancas feitas pelo usuario ou por outros agentes.
+4. Atualizar o `README.md` quando mudar arquitetura, ambiente ou fluxo de desenvolvimento.
+5. Rodar as validacoes correspondentes antes de concluir.
+
+## Seguranca
+
+- Chaves fornecidas em conversas ou ambientes compartilhados devem ser rotacionadas se houver risco de exposicao.
+- Nao commitar `.env`, tokens, credenciais de banco ou chaves de API.
+- Nao executar comandos que imprimam a configuracao resolvida do Compose quando ela contiver segredos.
+- Nao usar comandos destrutivos para banco ou Git sem solicitacao explicita.

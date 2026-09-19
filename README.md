@@ -50,7 +50,7 @@ Variaveis principais:
 
 | Variavel | Uso |
 |---|---|
-| `API_KEY` | Chave da aplicacao usada nas chamadas do frontend para o backend |
+| `API_KEY` | Chave administrativa usada somente no `/init-db` |
 | `API_URL` | URL do backend quando o frontend roda fora do Docker |
 | `DOCKER_API_URL` | URL do backend na rede interna do Compose |
 | `OPENROUTER_API_KEY` | Chave do modelo de chat |
@@ -197,6 +197,17 @@ Configure estes secrets no repositorio GitHub:
 | `DOCKER_ACCESS_TOKEN` | Access token do Docker Hub com permissao de escrita |
 
 As chaves de OpenRouter, OpenAI, Langfuse e PostgreSQL nao devem ser cadastradas no CI. Elas sao necessarias somente no ambiente de execucao.
+
+## Autenticacao
+
+O acesso da aplicacao usa email, senha e sessoes opacas persistidas no PostgreSQL. O frontend grava apenas o token da sessao em cookie `HttpOnly`; a senha nunca e armazenada em texto puro, sendo protegida com Argon2.
+
+Rotas publicas:
+
+- `/login`: entrada de usuarios existentes;
+- `/signup`: criacao de uma nova conta.
+
+Cada chat pertence ao usuario que o criou. Listagens, mensagens, limpeza e operacoes do chat verificam essa propriedade no backend. O `/init-db` continua protegido por `API_KEY` como operacao administrativa e nao participa do login do usuario.
 
 ## Seguranca
 

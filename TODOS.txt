@@ -1,6 +1,0 @@
-TODO (FULLSTACK):
-- Criar sistema de autenticação
-- Subir Docker
-- Alterar a chave da OpenAI para o OpenRouter
-- Adicionar testes
-- Aplicar CI/CD no github actions

@@ -17,3 +17,18 @@ def test_init_database_rejects_invalid_api_key():
 
     assert response.status_code == 401
     assert response.json()["detail"] == "Unauthorized: Invalid API key provided."
+
+
+def test_private_endpoint_requires_a_session():
+    response = client.get("/auth/me")
+
+    assert response.status_code == 401
+
+
+def test_signup_rejects_short_password_before_database_access():
+    response = client.post(
+        "/auth/signup",
+        json={"email": "user@example.com", "password": "short", "name": "User"},
+    )
+
+    assert response.status_code == 422

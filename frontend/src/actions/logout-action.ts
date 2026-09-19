@@ -1,11 +1,11 @@
 "use server";
 
 import { updateTag } from "next/cache";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { clearSession } from "./auth-action";
 
 export async function logoutAction() {
-  (await cookies()).delete("api-key");
+  await clearSession();
   updateTag("chat-messages");
   updateTag("chats");
   redirect("/");

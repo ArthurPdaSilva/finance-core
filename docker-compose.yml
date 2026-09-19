@@ -47,7 +47,6 @@ services:
     build:
       context: ./frontend
     environment:
-      API_KEY: ${API_KEY:-change-me}
       API_URL: ${DOCKER_API_URL:-http://backend:8000}
     depends_on:
       backend:

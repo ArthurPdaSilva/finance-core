@@ -52,7 +52,8 @@ Variaveis principais:
 - `OPENROUTER_API_KEY`, `OPENROUTER_BASE_URL` e `OPENROUTER_MODEL`: chat.
 - `OPENAI_API_KEY`: embeddings usados pelo ChromaDB e inicializacao do vector store.
 - `DATABASE_URL` e variaveis `POSTGRES_*`: banco financeiro.
-- `API_KEY`: autenticacao da API usada pelo frontend.
+- `API_KEY`: chave administrativa usada somente no `/init-db`.
+- `SESSION_TTL_DAYS`: duracao das sessoes opacas de usuario.
 - `LANGFUSE_HOST`, `LANGFUSE_PUBLIC_KEY` e `LANGFUSE_SECRET_KEY`: Langfuse Cloud.
 
 ## Integracoes Docker
@@ -61,6 +62,8 @@ Variaveis principais:
 - O frontend usa `http://backend:8000` dentro do Compose.
 - O backend envia observabilidade para o Langfuse Cloud configurado no ambiente.
 - O endpoint `/init-db` inicializa explicitamente as tabelas, seeds e vector store; ele pode resetar dados financeiros e de chat.
+- A autenticacao de usuario usa sessoes opacas em cookie `HttpOnly`, com senha armazenada como hash Argon2.
+- Todo chat deve ser filtrado pelo `user_id` autenticado; nunca confiar em um usuario enviado pelo cliente ou pelo modelo.
 
 ## Validacao
 

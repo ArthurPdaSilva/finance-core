@@ -20,6 +20,7 @@ class State(TypedDict):
     docs: List[Any]
     chat_history: List[str]
     chat_token: int | None
+    user_id: int
 
 
 class EngineGraph:

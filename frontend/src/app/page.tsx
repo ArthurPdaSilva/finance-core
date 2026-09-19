@@ -1,4 +1,4 @@
-import { AccessForm } from "@/components/AccessForm";
+import { AuthForm } from "@/components/AuthForm";
 
 export default function HomePage() {
   return (
@@ -10,7 +10,7 @@ export default function HomePage() {
         Bem-vindo ao Finance App
       </h1>
 
-      <AccessForm />
+      <AuthForm mode="login" />
     </div>
   );
 }

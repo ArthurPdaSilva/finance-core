@@ -12,7 +12,9 @@ class Chat(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     token = Column(String, unique=True)
     titulo = Column(String, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     criado_em = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    user = relationship("AuthUser", back_populates="chats")
 
 
 class Message(Base):
@@ -24,6 +26,29 @@ class Message(Base):
     criado_em = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     chat = relationship("Chat", backref="messages")
+
+
+class AuthUser(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(String, unique=True, nullable=False, index=True)
+    password_hash = Column(String, nullable=False)
+    name = Column(String, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    chats = relationship("Chat", back_populates="user")
+
+
+class UserSession(Base):
+    __tablename__ = "sessions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    token_hash = Column(String, unique=True, nullable=False, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(DateTime, nullable=False)
+    revoked_at = Column(DateTime, nullable=True)
+    user = relationship("AuthUser")
 
 
 class Usuario(Base):

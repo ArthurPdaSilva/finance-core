@@ -2,16 +2,15 @@
 
 import type { ChatResponse, MessageResponse } from "@/types";
 import { cookies } from "next/headers";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 export async function getChats(): Promise<ChatResponse> {
-  const apiKey = (await cookies()).get("api-key")?.value || "";
-
-  const urlSafeKey = encodeURIComponent(apiKey);
+  const sessionToken = (await cookies()).get("session-token")?.value || "";
   const res = await fetch(
-    `${process.env.API_URL}/finance-ai/chats?key=${urlSafeKey}`,
+    `${process.env.API_URL}/finance-ai/chats`,
     {
       method: "GET",
+      headers: { Authorization: `Bearer ${sessionToken}` },
       next: {
         tags: ["chats"],
         revalidate: Number(1800),
@@ -19,19 +18,20 @@ export async function getChats(): Promise<ChatResponse> {
     },
   );
 
+  if (res.status === 401) redirect("/login");
   if (res.status === 404) notFound();
   const json = await res.json();
   return json;
 }
 
 export async function getMessages(token: string): Promise<MessageResponse> {
-  const apiKey = (await cookies()).get("api-key")?.value || "";
-  const urlSafeKey = encodeURIComponent(apiKey);
+  const sessionToken = (await cookies()).get("session-token")?.value || "";
 
   const res = await fetch(
-    `${process.env.API_URL}/finance-ai/messages?key=${urlSafeKey}&chat_token=${token}`,
+    `${process.env.API_URL}/finance-ai/messages?chat_token=${encodeURIComponent(token)}`,
     {
       method: "GET",
+      headers: { Authorization: `Bearer ${sessionToken}` },
       next: {
         tags: ["chat-messages", `chats-message-${token}`],
         revalidate: Number(1800),
@@ -39,6 +39,7 @@ export async function getMessages(token: string): Promise<MessageResponse> {
     },
   );
 
+  if (res.status === 401) redirect("/login");
   if (res.status === 404) notFound();
   const json = await res.json();
   return json;

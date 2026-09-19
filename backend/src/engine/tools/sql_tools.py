@@ -4,6 +4,7 @@ import uuid
 from langchain.tools import tool
 from sqlalchemy import func
 
+from auth import require_current_user_id
 from db.database import SessionLocal
 from models.finance_models import (
     Chat,
@@ -309,15 +310,24 @@ def criar_ou_buscar_chat_tool(titulo: str, chat_token: str | None = None):
     Se chat_token for fornecido, tenta buscar; se nulo, cria um novo com o título.
     """
     db = SessionLocal()
+    user_id = require_current_user_id()
     try:
         if chat_token:
-            chat = db.query(Chat).filter(Chat.token == chat_token).first()
+            chat = (
+                db.query(Chat)
+                .filter(Chat.token == chat_token, Chat.user_id == user_id)
+                .first()
+            )
             if chat:
                 return json.dumps(
                     {"token": chat.token, "titulo": chat.titulo, "status": "existente"}
                 )
 
-        if db.query(Chat).filter(Chat.titulo == titulo).first():
+        if (
+            db.query(Chat)
+            .filter(Chat.titulo == titulo, Chat.user_id == user_id)
+            .first()
+        ):
             return json.dumps(
                 {
                     "chat_token": None,
@@ -327,7 +337,7 @@ def criar_ou_buscar_chat_tool(titulo: str, chat_token: str | None = None):
             )
 
         token = str(uuid.uuid4())
-        novo_chat = Chat(titulo=titulo, token=token)
+        novo_chat = Chat(titulo=titulo, token=token, user_id=user_id)
 
         db.add(novo_chat)
         db.commit()
@@ -346,6 +356,14 @@ def salvar_turno_conversa_tool(chat_token: str, question: str, answer: str):
     """
     db = SessionLocal()
     try:
+        user_id = require_current_user_id()
+        chat = (
+            db.query(Chat)
+            .filter(Chat.token == chat_token, Chat.user_id == user_id)
+            .first()
+        )
+        if not chat:
+            return json.dumps({"status": "erro", "message": "Chat não encontrado."})
         msg_user = Message(chat_token=chat_token, role="user", content=question)
         msg_ai = Message(chat_token=chat_token, role="assistant", content=answer)
 

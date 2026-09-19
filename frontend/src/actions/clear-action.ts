@@ -19,26 +19,25 @@ export async function clearAction(
     };
   }
 
-  const apiKey = (await cookies()).get("api-key")?.value || "";
+  const sessionToken = (await cookies()).get("session-token")?.value || "";
 
-  if (!apiKey) {
+  if (!sessionToken) {
     return {
       success: "",
-      error: "Chave de acesso não encontrada",
+      error: "Sessão não encontrada",
     };
   }
 
   try {
     const apiUrl = process.env.API_URL || "";
-    const response = await fetch(`${apiUrl}/init-db`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ key: apiKey }),
+    const response = await fetch(`${apiUrl}/finance-ai/chats`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${sessionToken}` },
     });
 
     if (!response.ok) {
       return {
-        error: "Erro ao limpar o banco de dados",
+        error: "Erro ao limpar seus chats",
         success: "",
       };
     }
@@ -48,12 +47,11 @@ export async function clearAction(
 
     return {
       error: "",
-      success: "Banco de dados limpado com sucesso!",
+      success: "Seus chats foram limpos com sucesso!",
     };
   } catch (e) {
-    console.log(e);
     return {
-      error: "Erro ao limpar o banco de dados",
+      error: "Erro ao limpar seus chats",
       success: "",
     };
   }

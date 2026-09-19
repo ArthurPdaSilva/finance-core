@@ -5,7 +5,6 @@ export type Message = {
 
 export type SendMessage = {
   question: string;
-  key: string;
   chat_history: string[];
   chat_token?: string;
 };

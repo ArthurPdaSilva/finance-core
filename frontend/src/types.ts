@@ -3,6 +3,13 @@ export type Message = {
   text: string;
 };
 
+export type AuthUser = {
+  id: number;
+  email: string;
+  name: string;
+  created_at: string;
+};
+
 export type SendMessage = {
   question: string;
   chat_history: string[];

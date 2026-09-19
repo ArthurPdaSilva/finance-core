@@ -1,9 +1,12 @@
 import { Chats } from "./Chats";
 import { MenuContainer } from "./MenuContainer";
+import { getCurrentUser } from "@/lib/queries";
 
-export const Menu = () => {
+export const Menu = async () => {
+  const user = await getCurrentUser();
+
   return (
-    <MenuContainer>
+    <MenuContainer user={user}>
       <Chats />
     </MenuContainer>
   );

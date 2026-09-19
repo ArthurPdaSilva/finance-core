@@ -1,14 +1,16 @@
 /** biome-ignore-all lint/performance/noImgElement: false positive */
 import { useMenu } from "@/contexts/MenuContext";
+import type { AuthUser } from "@/types";
 import Link from "next/link";
 import { ClearButton } from "./ClearButton";
 import { LogoutButton } from "./LogoutButton";
 
 type SidebarProps = {
   children: React.ReactNode;
+  user: AuthUser;
 };
 
-export const Sidebar = ({ children }: SidebarProps) => {
+export const Sidebar = ({ children, user }: SidebarProps) => {
   const { isOpen, toggleMenu } = useMenu();
 
   return (
@@ -113,13 +115,18 @@ export const Sidebar = ({ children }: SidebarProps) => {
       <div className="p-4 border-t border-gray-200">
         <div className="flex items-center gap-3">
           <div className="bg-[linear-gradient(90deg,#12A2CA,#199BC7,#5A63AB)] w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0">
-            AU
+            {user.name
+              .split(" ")
+              .map((part) => part[0])
+              .join("")
+              .slice(0, 2)
+              .toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">
-              Usuário Admin
+              {user.name}
             </p>
-            <p className="text-xs text-gray-500 truncate">Usuário único</p>
+            <p className="text-xs text-gray-500 truncate">{user.email}</p>
           </div>
         </div>
       </div>

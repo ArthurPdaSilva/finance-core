@@ -13,7 +13,7 @@ Browser :3000 --> frontend (Next.js) --> backend :8000 --> database :5432
                                                 +--> OpenAI (embeddings)
 ```
 
-O chat usa por padrao `meta-llama/llama-3.3-70b-instruct:free` pela OpenRouter. Esse modelo e adequado para testes simples sem custo de inferencia, sujeito aos limites e disponibilidade da OpenRouter. O vector store usa `text-embedding-3-small` pela OpenAI.
+O chat usa por padrao `openrouter/free` pela OpenRouter. Esse roteador seleciona automaticamente um modelo gratuito disponível para testes simples, sujeito aos limites e disponibilidade da OpenRouter. O vector store usa `text-embedding-3-small` pela OpenAI.
 
 ## Estrutura
 

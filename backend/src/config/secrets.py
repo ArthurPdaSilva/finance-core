@@ -23,7 +23,7 @@ class Secrets:
         "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"
     )
     OPENROUTER_MODEL = os.getenv(
-        "OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct:free"
+        "OPENROUTER_MODEL", "openrouter/free"
     )
     SESSION_TTL_DAYS = int(os.getenv("SESSION_TTL_DAYS", "7"))
 

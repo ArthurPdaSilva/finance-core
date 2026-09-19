@@ -1,8 +1,20 @@
 "use server";
 
-import type { ChatResponse, MessageResponse } from "@/types";
+import type { AuthUser, ChatResponse, MessageResponse } from "@/types";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
+
+export async function getCurrentUser(): Promise<AuthUser> {
+  const sessionToken = (await cookies()).get("session-token")?.value || "";
+  const res = await fetch(`${process.env.API_URL}/auth/me`, {
+    headers: { Authorization: `Bearer ${sessionToken}` },
+    cache: "no-store",
+  });
+
+  if (res.status === 401) redirect("/login");
+  if (!res.ok) throw new Error("Não foi possível carregar o usuário.");
+  return (await res.json()) as AuthUser;
+}
 
 export async function getChats(): Promise<ChatResponse> {
   const sessionToken = (await cookies()).get("session-token")?.value || "";

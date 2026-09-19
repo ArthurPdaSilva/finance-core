@@ -38,6 +38,16 @@ export const SendInput = () => {
     }
 
     if (!isPending) {
+      if (state.botResponse) {
+        setMessages((prev) => [
+          { sender: "assistant", text: state.botResponse },
+          ...prev.filter((message) => message.sender !== "waiting"),
+        ]);
+      } else {
+        setMessages((prev) =>
+          prev.filter((message) => message.sender !== "waiting"),
+        );
+      }
       setInputValue("");
     }
   }, [isPending, state.botResponse]);

@@ -30,7 +30,7 @@ frontend/
   src/app/                paginas e rotas Next.js
   src/components/         componentes de UI
 
-docker-compose.yml        PostgreSQL local
+docker-compose.yml        PostgreSQL, backend e frontend locais
 .env.example              contrato central de variaveis
 ```
 
@@ -76,7 +76,7 @@ Nao copie `.env` para imagens nem versiona segredos. Use um secret manager, como
 
 Configuracoes nao sensiveis tambem podem vir de um servico central de configuracao quando houver necessidade de alteracao dinamica. Para este projeto, variaveis de ambiente injetadas pelo deploy sao suficientes.
 
-## PostgreSQL Local
+## Docker Compose
 
 Requisitos: Docker Engine e Docker Compose.
 
@@ -87,19 +87,27 @@ Requisitos: Docker Engine e Docker Compose.
 docker compose config -q
 ```
 
-3. Inicie somente o PostgreSQL:
+3. Suba PostgreSQL, backend e frontend:
 
 ```bash
-docker compose up -d database
+docker compose up --build -d
 ```
 
-O Compose fornece apenas o banco da aplicacao:
+O Compose fornece os servicos locais da aplicacao:
 
 | Servico | Porta | Funcao |
 |---|---:|---|
 | `database` | 5432 | Dados financeiros e chats |
+| `backend` | 8000 | API FastAPI e agentes |
+| `frontend` | 3000 | Interface Next.js |
 
-O backend e o frontend sao executados fora do Compose, conforme as secoes abaixo. O backend usa PostgreSQL obrigatoriamente e nao possui fallback para SQLite. A inicializacao do banco tambem exige `OPENAI_API_KEY` para criar os embeddings do vector store.
+O backend usa PostgreSQL obrigatoriamente e nao possui fallback para SQLite. A inicializacao do banco tambem exige `OPENAI_API_KEY` para criar os embeddings do vector store.
+
+Acesse:
+
+- Frontend: http://localhost:3000
+- API: http://localhost:8000
+- Health check: http://localhost:8000/health
 
 Para parar sem remover dados:
 
@@ -113,7 +121,7 @@ Para remover tambem os volumes persistidos:
 docker compose down -v
 ```
 
-## Execucao Sem Docker
+## Execucao Local Sem Docker
 
 ### Backend
 
@@ -123,7 +131,7 @@ uv sync
 uv run --directory src uvicorn main:app --reload
 ```
 
-O backend encontra o `.env` raiz automaticamente e usa a `DATABASE_URL` PostgreSQL configurada nele.
+O backend encontra o `.env` raiz automaticamente e usa a `DATABASE_URL` PostgreSQL configurada nele. Se o PostgreSQL estiver no Compose, mantenha o banco ativo com `docker compose up -d database` e execute o backend no host.
 
 ### Frontend
 

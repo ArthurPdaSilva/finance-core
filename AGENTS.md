@@ -24,7 +24,7 @@ frontend/                 # Aplicacao Next.js e server actions
     components/           # Componentes de interface
     contexts/             # Estado compartilhado do frontend
 
-docker-compose.yml        # PostgreSQL local da aplicacao
+docker-compose.yml        # PostgreSQL, backend e frontend locais
 .env.example              # Contrato central de variaveis do ambiente local
 ```
 
@@ -57,8 +57,8 @@ Variaveis principais:
 
 ## Integracoes Docker
 
-- O Compose sobe apenas o PostgreSQL em `localhost:5432`.
-- Backend e frontend sao executados no host fora do Compose.
+- O Compose sobe PostgreSQL, backend e frontend; o Langfuse permanece externo.
+- O frontend usa `http://backend:8000` dentro do Compose.
 - O backend envia observabilidade para o Langfuse Cloud configurado no ambiente.
 - O endpoint `/init-db` inicializa explicitamente as tabelas, seeds e vector store; ele pode resetar dados financeiros e de chat.
 
@@ -68,7 +68,7 @@ Configuracao e integracao:
 
 ```bash
 docker compose config -q
-docker compose up -d database
+docker compose up --build
 ```
 
 Backend:

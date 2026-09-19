@@ -6,17 +6,14 @@ import { notFound, redirect } from "next/navigation";
 
 export async function getChats(): Promise<ChatResponse> {
   const sessionToken = (await cookies()).get("session-token")?.value || "";
-  const res = await fetch(
-    `${process.env.API_URL}/finance-ai/chats`,
-    {
-      method: "GET",
-      headers: { Authorization: `Bearer ${sessionToken}` },
-      next: {
-        tags: ["chats"],
-        revalidate: Number(1800),
-      },
+  const res = await fetch(`${process.env.API_URL}/finance-ai/chats`, {
+    method: "GET",
+    headers: { Authorization: `Bearer ${sessionToken}` },
+    next: {
+      tags: ["chats"],
+      revalidate: Number(1800),
     },
-  );
+  });
 
   if (res.status === 401) redirect("/login");
   if (res.status === 404) notFound();

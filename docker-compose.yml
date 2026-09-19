@@ -21,6 +21,7 @@ services:
       context: ./backend
     environment:
       API_KEY: ${API_KEY:-change-me}
+      SESSION_TTL_DAYS: ${SESSION_TTL_DAYS:-7}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       OPENROUTER_BASE_URL: ${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}

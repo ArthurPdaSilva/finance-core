@@ -10,6 +10,7 @@ chroma_financas/
 
 frontend/node_modules/
 frontend/.next/
+frontend/pnpm-workspace.yaml
 backend/.venv/
 backend/.pytest_cache/
 coverage/

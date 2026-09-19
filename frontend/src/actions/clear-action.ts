@@ -49,7 +49,7 @@ export async function clearAction(
       error: "",
       success: "Seus chats foram limpos com sucesso!",
     };
-  } catch (e) {
+  } catch (_error) {
     return {
       error: "Erro ao limpar seus chats",
       success: "",

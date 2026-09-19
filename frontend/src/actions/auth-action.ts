@@ -38,7 +38,7 @@ async function authenticate(path: string, body: Record<string, string>) {
 }
 
 export async function loginAction(
-  state: AuthState,
+  _state: AuthState,
   formData: FormData,
 ): Promise<AuthState> {
   const email = formData.get("email")?.toString().trim() || "";
@@ -50,7 +50,7 @@ export async function loginAction(
 }
 
 export async function signupAction(
-  state: AuthState,
+  _state: AuthState,
   formData: FormData,
 ): Promise<AuthState> {
   const name = formData.get("name")?.toString().trim() || "";

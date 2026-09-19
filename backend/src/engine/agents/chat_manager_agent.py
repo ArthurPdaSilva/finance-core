@@ -1,10 +1,9 @@
-import json
-
 from langchain.agents import create_agent
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 from engine.prompts import CHAT_MANAGER_PROMPT
 from engine.tools.sql_tools import criar_ou_buscar_chat_tool, salvar_turno_conversa_tool
+from utils.json_response import parse_json_response
 from utils.llm import make_llm
 
 
@@ -39,6 +38,6 @@ class ChatManagerAgent:
         final_content = result["messages"][-1].content
 
         # transforma em dict
-        data = json.loads(final_content)
+        data = parse_json_response(final_content)
 
         return data["chat_token"]

@@ -1,9 +1,8 @@
-import json
-
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from engine.prompts import ROUTING_AGENT_PROMPT
+from utils.json_response import parse_json_response
 from utils.llm import make_llm
 
 
@@ -25,4 +24,4 @@ class RoutingAgent:
             }
         )
 
-        return json.loads(result["messages"][-1].content)["intent"]
+        return parse_json_response(result["messages"][-1].content)["intent"]

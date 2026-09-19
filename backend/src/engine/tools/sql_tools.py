@@ -7,6 +7,7 @@ from sqlalchemy import func
 from auth import require_current_user_id
 from db.database import SessionLocal
 from models.finance_models import (
+    AuthUser,
     Chat,
     Message,
     RegistroFinanceiro,
@@ -20,16 +21,32 @@ from models.finance_models import (
 
 
 def get_usuario_id_by_nome(db, nome: str | None):
-    """Busca o ID do usuário pelo nome, retornando 1 como padrão."""
-    if not nome:
-        return 1  # fallback seguro
+    """Resolve o perfil financeiro sem usar um ID fixo ou usuário implícito."""
+    auth_user = (
+        db.query(AuthUser)
+        .filter(AuthUser.id == require_current_user_id())
+        .first()
+    )
+    if not auth_user:
+        return None
 
-    usuario = db.query(Usuario).filter(func.lower(Usuario.nome) == nome.lower()).first()
+    requested_name = nome.strip() if nome else auth_user.name
+    usuario = (
+        db.query(Usuario)
+        .filter(func.lower(Usuario.nome) == requested_name.lower())
+        .first()
+    )
+    if usuario:
+        return usuario.id
 
-    if not usuario:
-        return 1  # fallback silencioso (não quebra a tool)
+    # Create the authenticated user's financial profile on first write.
+    if not nome or requested_name.lower() == auth_user.name.lower():
+        usuario = Usuario(nome=auth_user.name, salario=0)
+        db.add(usuario)
+        db.flush()
+        return usuario.id
 
-    return usuario.id
+    return None
 
 
 @tool
@@ -70,6 +87,9 @@ def add_registro_tool(
         valor_por_parcela = valor_total / parcelas_restantes
 
     usuario_id = get_usuario_id_by_nome(db, usuario_nome)
+    if usuario_id is None:
+        db.close()
+        return f"Usuário financeiro '{usuario_nome}' não encontrado."
 
     registro = RegistroFinanceiro(
         nome=nome,

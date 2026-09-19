@@ -1,43 +1,24 @@
-from langchain.agents import create_agent
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-
-from engine.prompts import CHAT_MANAGER_PROMPT
 from engine.tools.sql_tools import criar_ou_buscar_chat_tool, salvar_turno_conversa_tool
 from utils.json_response import parse_json_response
-from utils.llm import make_llm
 
 
 class ChatManagerAgent:
-    def __init__(self):
-        self.llm = make_llm()
-
-        self.agent = create_agent(
-            model=self.llm,
-            tools=[
-                criar_ou_buscar_chat_tool,
-                salvar_turno_conversa_tool,
-            ],
-        )
-
     def run(self, question: str, answer: str, chat_token: str, chat_history: list):
-        user_input = f"Chat Token atual: {chat_token if chat_token else 'Nulo'}. Pergunta: {question}. Resposta: {answer}."
-
-        system_prompt = CHAT_MANAGER_PROMPT.replace("{{user_input}}", user_input)
-
-        result = self.agent.invoke(
-            {
-                "messages": [
-                    *chat_history,
-                    SystemMessage(content=system_prompt),
-                    HumanMessage(content=question),
-                    AIMessage(content=answer),
-                ]
-            }
+        title = question.strip().replace("\n", " ")[:80] or "Novo chat"
+        chat_result = parse_json_response(
+            criar_ou_buscar_chat_tool.invoke(
+                {"titulo": title, "chat_token": chat_token}
+            )
         )
+        token = chat_result.get("chat_token") or chat_result.get("token")
+        if not token:
+            raise ValueError("A persistência não retornou um token de chat válido.")
 
-        final_content = result["messages"][-1].content
-
-        # transforma em dict
-        data = parse_json_response(final_content)
-
-        return data["chat_token"]
+        save_result = parse_json_response(
+            salvar_turno_conversa_tool.invoke(
+                {"chat_token": token, "question": question, "answer": answer}
+            )
+        )
+        if save_result.get("status") == "erro":
+            raise ValueError(save_result.get("message", "Não foi possível salvar o turno."))
+        return token

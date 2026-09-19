@@ -19,6 +19,7 @@ from auth import (
 from db.database import SessionLocal, engine
 from models.finance_models import AuthUser, Base, Chat, Message, UserSession
 from utils.check_key import check_api_key
+from utils.guardrails import GuardrailViolation, validate_answer, validate_question
 
 
 @asynccontextmanager
@@ -196,6 +197,11 @@ def finance_ai_question(
 
     from engine.engine_graph import EngineGraph
 
+    try:
+        question = validate_question(finance_question.question)
+    except GuardrailViolation as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
     engine = EngineGraph()
     graph = engine.build_graph()
     langfuse_handler = CallbackHandler()
@@ -206,7 +212,7 @@ def finance_ai_question(
             span.update_trace(name="user-question", input=finance_question.question)
             resp = graph.invoke(
                 {
-                    "question": finance_question.question,
+                    "question": question,
                     "chat_history": finance_question.chat_history,
                     "chat_token": finance_question.chat_token,
                     "user_id": current_user.id,
@@ -214,8 +220,9 @@ def finance_ai_question(
                 config={"thread_id": "user-thread", "callbacks": [langfuse_handler]},
             )
 
-            span.update_trace(name="user-question", output=resp["answer"])
-            return {"message": resp["answer"], "chat_token": resp["chat_token"]}
+            answer = validate_answer(resp["answer"])
+            span.update_trace(name="user-question", output=answer)
+            return {"message": answer, "chat_token": resp["chat_token"]}
 
 
 @app.get("/finance-ai/chats")

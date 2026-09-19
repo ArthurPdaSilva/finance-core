@@ -13,7 +13,7 @@ Browser :3000 --> frontend (Next.js) --> backend :8000 --> database :5432
                                                 +--> OpenAI (embeddings)
 ```
 
-O chat usa por padrao `google/gemma-4-31b-it:free` pela OpenRouter. Esse modelo gratuito oferece suporte a tools e respostas estruturadas para os agentes, sujeito aos limites e disponibilidade da OpenRouter. O vector store usa `text-embedding-3-small` pela OpenAI.
+O chat usa por padrao `liquid/lfm-2.5-2.6b:free` pela OpenRouter. Esse modelo gratuito oferece suporte a tools e respostas estruturadas para os agentes, sujeito aos limites e disponibilidade da OpenRouter. O vector store usa `text-embedding-3-small` pela OpenAI.
 
 ## Estrutura
 

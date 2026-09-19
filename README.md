@@ -7,7 +7,7 @@ Aplicacao full stack de analise financeira com assistente conversacional baseado
 ```text
 Browser :3000 --> frontend (Next.js) --> backend :8000 --> database :5432
                                                |
-                                               +--> OpenAI / Langfuse (opcionais)
+                                               +--> Langfuse :3000 --> ClickHouse / Redis / MinIO
 ```
 
 Os servicos pertencem a mesma rede Docker. Por isso, o frontend usa `http://backend:8000` como URL interna da API, enquanto a API fica disponivel no host em `http://localhost:8000`.
@@ -17,6 +17,10 @@ Os servicos pertencem a mesma rede Docker. Por isso, o frontend usa `http://back
 | `database` | `postgres:16-alpine` | 5432 | Persistencia dos dados financeiros e historico de chats |
 | `backend` | Dockerfile local | 8000 | API FastAPI e processamento dos agentes |
 | `frontend` | Dockerfile local | 3000 | Interface Next.js |
+| `langfuse-web` | `langfuse:4` | 3001 | Interface e API de observabilidade |
+| `langfuse-worker` | `langfuse-worker:4` | - | Processamento assincrono dos eventos |
+| `langfuse-postgres` | `postgres:17-alpine` | - | Banco interno do Langfuse |
+| `clickhouse`, `redis`, `minio` | Imagens oficiais | - | Dependências de armazenamento e fila do Langfuse |
 
 ## Execucao com Docker
 
@@ -29,7 +33,7 @@ API_KEY=uma-chave-local
 OPENAI_API_KEY=sua-chave-openai
 ```
 
-`LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` e `LANGFUSE_BASE_URL` sao opcionais. Os valores padrao do PostgreSQL funcionam localmente, mas devem ser alterados em ambientes compartilhados.
+O Compose sobe uma instancia self-hosted do Langfuse em `http://localhost:3001`. A configuracao local usa `pk-lf-local` e `sk-lf-local` para permitir traces imediatamente; substitua essas chaves e todos os demais segredos padrao antes de usar fora do ambiente local.
 
 2. Suba os tres servicos:
 
@@ -42,8 +46,11 @@ docker compose up --build -d
 - Frontend: http://localhost:3000
 - API: http://localhost:8000
 - Health check: http://localhost:8000/health
+- Langfuse: http://localhost:3001
 
 Use o valor de `API_KEY` no formulario inicial. Depois do primeiro acesso, use a opcao de inicializacao do banco para criar as tabelas, inserir os dados de exemplo e montar o vector store. Essa etapa exige `OPENAI_API_KEY` configurada.
+
+O usuario inicial do Langfuse usa `LANGFUSE_INIT_USER_EMAIL` e `LANGFUSE_INIT_USER_PASSWORD`. Essas variaveis de inicializacao so sao aplicadas quando o banco interno do Langfuse ainda esta vazio.
 
 Para acompanhar os logs:
 

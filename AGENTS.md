@@ -4,7 +4,7 @@
 
 - `backend/`: FastAPI, SQLAlchemy, LangGraph, RAG and database seed.
 - `frontend/`: Next.js application and server actions.
-- `docker-compose.yml`: local PostgreSQL, backend and frontend orchestration.
+- `docker-compose.yml`: local PostgreSQL, backend, frontend and self-hosted Langfuse orchestration.
 
 ## Local Conventions
 
@@ -12,6 +12,8 @@
 - Keep the frontend API URL configurable through `API_URL`.
 - Use `http://backend:8000` for frontend-to-backend calls inside Docker Compose.
 - Use `http://127.0.0.1:8000` when running the frontend outside Docker.
+- Use `http://langfuse-web:3000` for backend-to-Langfuse calls inside Docker Compose.
+- Open the Langfuse dashboard at `http://localhost:3001` from the host.
 - Do not commit generated databases, vector stores, build output or dependencies.
 
 ## Validation
@@ -21,6 +23,7 @@ Run the Docker stack before changing integration behavior:
 ```bash
 docker compose config
 docker compose up --build
+docker compose logs -f langfuse-web langfuse-worker
 ```
 
 For backend changes:

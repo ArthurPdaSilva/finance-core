@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -7,8 +9,12 @@ from utils.check_key import check_api_key
 app = FastAPI()
 
 origins = [
-    "http://localhost:3000",
-    "https://finance-app-kappa-two.vercel.app",
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        "http://localhost:3000,http://frontend:3000",
+    ).split(",")
+    if origin.strip()
 ]
 
 app.add_middleware(
@@ -18,6 +24,11 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
 
 
 class InitDb(BaseModel):

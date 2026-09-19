@@ -1,0 +1,10 @@
+.env
+.env.*
+.venv
+__pycache__
+*.pyc
+chroma_financas
+*.db
+*.sqlite
+*.sqlite3
+.git

@@ -1,63 +1,102 @@
+# Finance Core
 
-**Overview**
-- **Repo:** Este repositório é o core que contém dois projetos independentes: o backend (API em Python/FastAPI) e o frontend (aplicação Next.js). Use as instruções abaixo para executar cada um separadamente em desenvolvimento.
+Aplicacao full stack de analise financeira com assistente conversacional baseado em IA. O projeto combina uma API FastAPI com agentes LangGraph, RAG, busca vetorial e consultas SQL, um frontend Next.js e um banco PostgreSQL.
 
-**Prerequisites**
-- **Python:** instale Python >= 3.13 para o backend.
-- **Node / pnpm:** instale Node.js (compatível com Next 16) e `pnpm` para o frontend (o projeto usa `pnpm` no lockfile).
+## Arquitetura Docker
 
-**Backend (API)**
-- **Localização:** [backend/src/main.py](backend/src/main.py#L1-L80)
-- **Instalar dependências:**
-	- Crie e ative um virtualenv:
-		`uv venv` (Windows: `.venv\Scripts\activate`)
-	- Atualize o uv e instale o pacote do projeto a partir do `pyproject.toml`:
-		`uv sync`
-- **Variáveis de ambiente:** copie ou crie um arquivo `.env` dentro de `backend/` com pelo menos:
-	- `OPENAI_API_KEY` — sua chave OpenAI
-	- `API_KEY` — chave para usar o endpoint `/init-db` e proteger a API
-	- `DATABASE_URL` — (ex.: `sqlite:///app.db`)
-	Veja o arquivo de exemplo em [backend/.env.example](backend/.env.example) para referência — copie para `backend/.env` e preencha os valores (não comitar chaves reais).
-- **Rodar em desenvolvimento:**
-	- Entre na pasta `backend/src` e execute o Uvicorn:
-		`uvicorn main:app --reload --host 127.0.0.1 --port 8000`
-	- A API ficará disponível em `http://127.0.0.1:8000` (ou `http://localhost:8000`).
+```text
+Browser :3000 --> frontend (Next.js) --> backend :8000 --> database :5432
+                                               |
+                                               +--> OpenAI / Langfuse (opcionais)
+```
 
-**Frontend (Next.js)**
-- **Localização:** [frontend/package.json](frontend/package.json#L1-L40)
-- **Instalar dependências:**
-	- No diretório `frontend`, execute:
-		`pnpm install`
-- **Variáveis de ambiente:** crie `frontend/.env` com pelo menos:
-	- `API_KEY` — mesma chave usada pelo backend para chamadas autenticadas
-	- `API_URL` — URL da API (ex.: `http://127.0.0.1:8000`)
-	Veja [frontend/.env.example](frontend/.env.example) como referência — copie para `frontend/.env` e preencha os valores.
-- **Rodar em desenvolvimento:**
-	- No diretório `frontend`, execute:
-		`pnpm dev`
-	- O frontend padrão estará em `http://localhost:3000`.
+Os servicos pertencem a mesma rede Docker. Por isso, o frontend usa `http://backend:8000` como URL interna da API, enquanto a API fica disponivel no host em `http://localhost:8000`.
 
-**Fluxo típico (desenvolvimento)**
-- 1) Configure `backend/.env` e rode o backend com Uvicorn.
-- 2) Configure `frontend/.env` apontando `API_URL` para o backend e rode `pnpm dev`.
-- 3) Abra `http://localhost:3000` para usar a interface.
+| Servico | Imagem | Porta | Funcao |
+|---|---|---:|---|
+| `database` | `postgres:16-alpine` | 5432 | Persistencia dos dados financeiros e historico de chats |
+| `backend` | Dockerfile local | 8000 | API FastAPI e processamento dos agentes |
+| `frontend` | Dockerfile local | 3000 | Interface Next.js |
 
-**Notas e segurança**
-- Os arquivos `.env` contêm chaves sensíveis — não os comite no controle de versão. Use variáveis de ambiente seguras em produção.
-- O `pyproject.toml` do backend lista as dependências; veja [backend/pyproject.toml](backend/pyproject.toml#L1-L40).
+## Execucao com Docker
 
-**Sobre os projetos**
-- **Backend:** implementado com FastAPI, o backend expõe endpoints principais em `backend/src/main.py` (ex.: `/finance-ai` e `/init-db`). Responsabilidades:
-	- Gerenciar o banco de dados SQLite (`backend/src/db`)
-	- Popular dados iniciais (`seed_init.py`)
-	- Gerar e atualizar o vector store usado pelo RAG (`backend/src/rag`)
-	- Orquestrar agentes e pipelines de prompts em `backend/src/engine` (graph de execução)
-- **Frontend:** aplicação Next.js em `frontend/` com interface React/TS. Responsabilidades:
-	- UI e fluxos de chat em `frontend/src/components/Chat` e páginas em `frontend/src/app/chat`
-	- Chamadas ao backend via `API_URL` em `frontend/.env`
-	- Ações e contexto em `frontend/src/actions` e `frontend/src/contexts`
+Requisitos: Docker Engine e Docker Compose.
 
-**Recomendações rápidas**
-- Para desenvolvimento local, rode o backend em `:8000` e o frontend em `:3000`.
-- Use o mesmo `API_KEY` em `backend/.env` e `frontend/.env` durante testes locais.
+1. Crie um arquivo `.env` na raiz com pelo menos:
 
+```env
+API_KEY=uma-chave-local
+OPENAI_API_KEY=sua-chave-openai
+```
+
+`LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` e `LANGFUSE_BASE_URL` sao opcionais. Os valores padrao do PostgreSQL funcionam localmente, mas devem ser alterados em ambientes compartilhados.
+
+2. Suba os tres servicos:
+
+```bash
+docker compose up --build -d
+```
+
+3. Acesse a aplicacao:
+
+- Frontend: http://localhost:3000
+- API: http://localhost:8000
+- Health check: http://localhost:8000/health
+
+Use o valor de `API_KEY` no formulario inicial. Depois do primeiro acesso, use a opcao de inicializacao do banco para criar as tabelas, inserir os dados de exemplo e montar o vector store. Essa etapa exige `OPENAI_API_KEY` configurada.
+
+Para acompanhar os logs:
+
+```bash
+docker compose logs -f backend frontend
+```
+
+Para encerrar os containers sem remover os dados:
+
+```bash
+docker compose down
+```
+
+Para remover tambem o banco persistido:
+
+```bash
+docker compose down -v
+```
+
+## Execucao local sem Docker
+
+### Backend
+
+```bash
+cd backend
+uv sync
+DATABASE_URL=sqlite:///app.db DATABASE_NAME=app.db uv run --directory src uvicorn main:app --reload
+```
+
+### Frontend
+
+Configure `frontend/.env` com:
+
+```env
+API_KEY=uma-chave-local
+API_URL=http://127.0.0.1:8000
+```
+
+Depois execute:
+
+```bash
+cd frontend
+pnpm install
+pnpm dev
+```
+
+## Variaveis de ambiente
+
+Os arquivos `backend/.env.example` e `frontend/.env.example` documentam as variaveis de cada servico. Nunca versione chaves de OpenAI, Langfuse ou a chave de acesso da aplicacao.
+
+## Stack
+
+- Python 3.13, FastAPI, SQLAlchemy e PostgreSQL
+- LangChain, LangGraph, ChromaDB e Langfuse
+- Next.js 16, React 19, TypeScript e Tailwind CSS
+- Docker Compose

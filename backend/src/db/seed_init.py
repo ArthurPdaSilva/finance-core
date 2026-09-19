@@ -1,10 +1,10 @@
-import sqlite3
+from sqlalchemy import text
 
-from config.secrets import Secrets
+from db.database import engine
 from db.seeds import REGISTROS_FINANCEIROS, USUARIOS
 from models.finance_models import TipoTransacao
 
-DB_NAME = Secrets.DATABASE_NAME or "database.sqlite3"
+AUTO_ID = "SERIAL PRIMARY KEY" if engine.dialect.name == "postgresql" else "INTEGER PRIMARY KEY"
 
 # ---------------------------------------------------------
 # Criação / Remoção de Tabelas
@@ -45,17 +45,17 @@ CREATE_TABLES = [
     # -----------------------------------------------------
     #  NOVAS TABELAS: CHAT + MESSAGES
     # -----------------------------------------------------
-    """
+    f"""
     CREATE TABLE IF NOT EXISTS chats (
-        id INTEGER PRIMARY KEY,
+        id {AUTO_ID},
         token TEXT UNIQUE NOT NULL,
         titulo TEXT NOT NULL,
         criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
     """,
-    """
+    f"""
     CREATE TABLE IF NOT EXISTS messages (
-        id INTEGER PRIMARY KEY,
+        id {AUTO_ID},
         chat_token TEXT NOT NULL,
         role TEXT NOT NULL CHECK(role IN ('user', 'assistant', 'system')),
         content TEXT NOT NULL,
@@ -72,24 +72,24 @@ CREATE_TABLES = [
 
 def drop_old_tables(cursor):
     for query in DROP_OLD_TABLES:
-        cursor.execute(query)
+        cursor.execute(text(query))
 
 
 def create_tables(cursor):
     for query in CREATE_TABLES:
-        cursor.execute(query)
+        cursor.execute(text(query))
 
 
 def clear_tables(cursor):
-    cursor.execute("DELETE FROM registros_financeiros")
-    cursor.execute("DELETE FROM usuarios")
+    cursor.execute(text("DELETE FROM registros_financeiros"))
+    cursor.execute(text("DELETE FROM usuarios"))
 
 
 def seed_data(cursor):
     # Usuários
-    cursor.executemany(
-        "INSERT INTO usuarios (id, nome, salario) VALUES (?, ?, ?)",
-        USUARIOS,
+    cursor.execute(
+        text("INSERT INTO usuarios (id, nome, salario) VALUES (:id, :nome, :salario)"),
+        [{"id": user[0], "nome": user[1], "salario": user[2]} for user in USUARIOS],
     )
 
     # Registros Financeiros
@@ -97,12 +97,12 @@ def seed_data(cursor):
         if isinstance(registro["tipo"], TipoTransacao):
             registro["tipo"] = registro["tipo"].value
 
-    cursor.executemany(
-        """
+    cursor.execute(
+        text("""
         INSERT INTO registros_financeiros 
         (id, usuario_id, tipo, nome, valor_por_parcela, valor_total, parcelas_restantes)
         VALUES (:id, :usuario_id, :tipo, :nome, :valor_por_parcela, :valor_total, :parcelas_restantes)
-        """,
+        """),
         REGISTROS_FINANCEIROS,
     )
 
@@ -113,15 +113,10 @@ def seed_data(cursor):
 
 
 def init_seed():
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-
-    drop_old_tables(cursor)
-    create_tables(cursor)
-    clear_tables(cursor)
-    seed_data(cursor)
-
-    conn.commit()
-    conn.close()
+    with engine.begin() as conn:
+        drop_old_tables(conn)
+        create_tables(conn)
+        clear_tables(conn)
+        seed_data(conn)
 
     print("Seed executado com sucesso!")

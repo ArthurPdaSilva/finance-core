@@ -14,7 +14,6 @@ dependencies = [
     "langchain-openai>=1.1.7",
     "langfuse==3.9.3",
     "langgraph>=1.0.8",
-    "langgraph-checkpoint-sqlite>=3.0.3",
     "psycopg[binary]>=3.2.4",
     "python-dotenv>=1.2.1",
     "ruff>=0.15.0",

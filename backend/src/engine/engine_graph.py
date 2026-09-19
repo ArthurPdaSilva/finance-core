@@ -1,7 +1,6 @@
-import sqlite3
 from typing import Any, List, TypedDict
 
-from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph
 
 from engine.agents.answer_agent import AnswerAgent
@@ -113,8 +112,7 @@ class EngineGraph:
         # FINAL
         graph.set_finish_point("chat_manager")
 
-        conn = sqlite3.connect("state.db", check_same_thread=False)
-        checkpointer = SqliteSaver(conn)
+        checkpointer = MemorySaver()
         return graph.compile(
             checkpointer=checkpointer,
         )

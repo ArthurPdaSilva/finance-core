@@ -1,13 +1,13 @@
 # Finance Core
 
-Aplicacao full stack de analise financeira com assistente conversacional baseado em IA. O projeto combina uma API FastAPI com agentes LangGraph, RAG, busca vetorial e consultas SQL, um frontend Next.js, PostgreSQL e Langfuse self-hosted.
+Aplicacao full stack de analise financeira com assistente conversacional baseado em IA. O projeto combina uma API FastAPI com agentes LangGraph, RAG, busca vetorial e consultas SQL, um frontend Next.js, PostgreSQL e Langfuse Cloud.
 
 ## Visao Geral
 
 ```text
 Browser :3000 --> frontend (Next.js) --> backend :8000 --> database :5432
-                                                |
-                                                +--> Langfuse :3000 --> ClickHouse / Redis / MinIO
+                                                 |
+                                                +--> Langfuse Cloud
                                                 |
                                                 +--> OpenRouter (chat)
                                                 +--> OpenAI (embeddings)
@@ -19,7 +19,7 @@ O chat usa por padrao `meta-llama/llama-3.3-70b-instruct:free` pela OpenRouter. 
 
 ```text
 backend/
-  src/config/             configuracao central e Langfuse
+  src/config/             configuracao central e Langfuse Cloud
   src/db/                 banco, models e seeds
   src/engine/             grafo, agentes, prompts e tools
   src/rag/                ChromaDB e consultas financeiras
@@ -30,7 +30,7 @@ frontend/
   src/app/                paginas e rotas Next.js
   src/components/         componentes de UI
 
-docker-compose.yml        stack local completa
+docker-compose.yml        PostgreSQL local
 .env.example              contrato central de variaveis
 ```
 
@@ -58,11 +58,17 @@ Variaveis principais:
 | `OPENROUTER_MODEL` | Modelo usado pelo chat |
 | `OPENAI_API_KEY` | Embeddings do ChromaDB e inicializacao do vector store |
 | `DATABASE_URL` | URL do banco quando executado fora do Compose |
-| `LANGFUSE_*` | Banco, chaves e URL do Langfuse |
+| `LANGFUSE_HOST` | URL do projeto Langfuse Cloud |
+| `LANGFUSE_PUBLIC_KEY` | Chave publica do projeto Langfuse |
+| `LANGFUSE_SECRET_KEY` | Chave secreta do projeto Langfuse |
 
 O backend carrega explicitamente o `.env` raiz em `backend/src/config/secrets.py` e nao depende do diretorio atual. Variaveis ja presentes no ambiente, como as injetadas pelo Docker, tem prioridade.
 
 `backend/.env` e `frontend/.env` nao sao mais fontes de configuracao. O Next.js carrega o `.env` raiz durante o desenvolvimento local. No Compose, `API_KEY` e `DOCKER_API_URL` sao injetados no container do frontend.
+
+### Langfuse Cloud
+
+Crie um projeto no [Langfuse Cloud](https://cloud.langfuse.com), copie as chaves de observabilidade e preencha `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` e `LANGFUSE_HOST` no ambiente. O backend envia traces diretamente para o servico Cloud; nenhuma imagem, banco ou fila do Langfuse e executada localmente.
 
 ### Producao
 
@@ -70,7 +76,7 @@ Nao copie `.env` para imagens nem versiona segredos. Use um secret manager, como
 
 Configuracoes nao sensiveis tambem podem vir de um servico central de configuracao quando houver necessidade de alteracao dinamica. Para este projeto, variaveis de ambiente injetadas pelo deploy sao suficientes.
 
-## Docker Compose
+## PostgreSQL Local
 
 Requisitos: Docker Engine e Docker Compose.
 
@@ -81,35 +87,19 @@ Requisitos: Docker Engine e Docker Compose.
 docker compose config -q
 ```
 
-3. Suba a stack:
+3. Inicie somente o PostgreSQL:
 
 ```bash
-docker compose up --build -d
+docker compose up -d database
 ```
 
-Servicos principais:
+O Compose fornece apenas o banco da aplicacao:
 
 | Servico | Porta | Funcao |
 |---|---:|---|
-| `frontend` | 3000 | Interface Next.js |
-| `backend` | 8000 | API FastAPI e agentes |
 | `database` | 5432 | Dados financeiros e chats |
-| `langfuse-web` | 3001 | Dashboard de observabilidade |
 
-Acesse:
-
-- Frontend: http://localhost:3000
-- API: http://localhost:8000
-- Health check: http://localhost:8000/health
-- Langfuse: http://localhost:3001
-
-Depois do primeiro acesso, use a inicializacao do banco para criar tabelas, inserir seeds e montar o vector store. Essa etapa exige `OPENAI_API_KEY`, pois embeddings da OpenRouter nao fazem parte deste fluxo.
-
-Para acompanhar logs:
-
-```bash
-docker compose logs -f backend frontend
-```
+O backend e o frontend sao executados fora do Compose, conforme as secoes abaixo. O backend usa PostgreSQL obrigatoriamente e nao possui fallback para SQLite. A inicializacao do banco tambem exige `OPENAI_API_KEY` para criar os embeddings do vector store.
 
 Para parar sem remover dados:
 
@@ -133,7 +123,7 @@ uv sync
 uv run --directory src uvicorn main:app --reload
 ```
 
-O backend encontra o `.env` raiz automaticamente. Se quiser usar SQLite local, defina `DATABASE_URL=sqlite:///app.db` e `DATABASE_NAME=app.db` no ambiente do processo.
+O backend encontra o `.env` raiz automaticamente e usa a `DATABASE_URL` PostgreSQL configurada nele.
 
 ### Frontend
 
@@ -167,11 +157,12 @@ pnpm build
 - Nao imprima o conteudo de arquivos de ambiente ou a configuracao completa resolvida do Compose.
 - Nao coloque segredos em variaveis `NEXT_PUBLIC_*` ou no bundle do frontend.
 - O endpoint `/init-db` deve ser protegido por `API_KEY` e executado conscientemente, pois recria dados de seed e o vector store.
+- As chaves do Langfuse Cloud devem ser tratadas como segredos e nunca expostas no frontend.
 - Rotacione chaves que tenham sido expostas em logs, commits ou ambientes compartilhados.
 
 ## Stack
 
 - Python 3.13, FastAPI, SQLAlchemy e PostgreSQL
-- LangChain, LangGraph, ChromaDB e Langfuse
+- LangChain, LangGraph, ChromaDB e Langfuse Cloud
 - Next.js 16, React 19, TypeScript e Tailwind CSS
 - Docker Compose

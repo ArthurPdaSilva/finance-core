@@ -4,9 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from config.secrets import Secrets
 from models.finance_models import Base
 
-database_url = Secrets.DATABASE_URL or "sqlite:///app.db"
-connect_args = {"check_same_thread": False} if database_url.startswith("sqlite") else {}
-engine = create_engine(database_url, connect_args=connect_args)
+engine = create_engine(Secrets.DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
 

@@ -14,7 +14,7 @@ class Secrets:
     # Langfuse
     LANGFUSE_PUBLIC_KEY = os.getenv("LANGFUSE_PUBLIC_KEY")
     LANGFUSE_SECRET_KEY = os.getenv("LANGFUSE_SECRET_KEY")
-    LANGFUSE_BASE_URL = os.getenv("LANGFUSE_BASE_URL")
+    LANGFUSE_HOST = os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
 
     # LLM providers
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -27,5 +27,8 @@ class Secrets:
     )
 
     # Database
-    DATABASE_URL = os.getenv("DATABASE_URL")
-    DATABASE_NAME = os.getenv("DATABASE_NAME") or "database.sqlite3"
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        "postgresql+psycopg://finance:finance@127.0.0.1:5432/finance",
+    )
+    DATABASE_NAME = os.getenv("DATABASE_NAME") or "finance"

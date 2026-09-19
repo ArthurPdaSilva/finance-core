@@ -2,7 +2,7 @@
 
 ## Visao Geral
 
-Monorepo de uma aplicacao de analise financeira com API FastAPI, agentes LangGraph, RAG, PostgreSQL, frontend Next.js e observabilidade self-hosted com Langfuse.
+Monorepo de uma aplicacao de analise financeira com API FastAPI, agentes LangGraph, RAG, PostgreSQL, frontend Next.js e observabilidade com Langfuse Cloud.
 
 O chat usa a API compativel com OpenAI da OpenRouter. O modelo padrao e gratuito para testes simples; embeddings continuam usando OpenAI para o vector store.
 
@@ -24,7 +24,7 @@ frontend/                 # Aplicacao Next.js e server actions
     components/           # Componentes de interface
     contexts/             # Estado compartilhado do frontend
 
-docker-compose.yml        # PostgreSQL, backend, frontend e Langfuse
+docker-compose.yml        # PostgreSQL local da aplicacao
 .env.example              # Contrato central de variaveis do ambiente local
 ```
 
@@ -38,7 +38,7 @@ docker-compose.yml        # PostgreSQL, backend, frontend e Langfuse
 
 ## Configuracao de Ambiente
 
-- O `.env` da raiz e a fonte central de configuracao local do Docker Compose e do backend executado fora do Docker.
+- O `.env` da raiz e a fonte central de configuracao local do Docker Compose, backend e frontend executados fora do Docker.
 - `.env.example` documenta as variaveis centrais sem valores sensiveis.
 - `backend/.env` e `frontend/.env` nao devem ser usados para novas configuracoes; valores locais existentes devem ser migrados para a raiz.
 - O Next.js carrega o `.env` raiz quando executado fora do Compose.
@@ -53,14 +53,13 @@ Variaveis principais:
 - `OPENAI_API_KEY`: embeddings usados pelo ChromaDB e inicializacao do vector store.
 - `DATABASE_URL` e variaveis `POSTGRES_*`: banco financeiro.
 - `API_KEY`: autenticacao da API usada pelo frontend.
-- `LANGFUSE_*`: observabilidade e credenciais do Langfuse.
+- `LANGFUSE_HOST`, `LANGFUSE_PUBLIC_KEY` e `LANGFUSE_SECRET_KEY`: Langfuse Cloud.
 
 ## Integracoes Docker
 
-- Dentro do Compose, o frontend chama `http://backend:8000`.
-- Fora do Compose, o frontend chama `http://127.0.0.1:8000`.
-- Dentro do Compose, o backend chama `http://langfuse-web:3000`.
-- No host, o dashboard do Langfuse fica em `http://localhost:3001`.
+- O Compose sobe apenas o PostgreSQL em `localhost:5432`.
+- Backend e frontend sao executados no host fora do Compose.
+- O backend envia observabilidade para o Langfuse Cloud configurado no ambiente.
 - O endpoint `/init-db` inicializa explicitamente as tabelas, seeds e vector store; ele pode resetar dados financeiros e de chat.
 
 ## Validacao
@@ -69,8 +68,7 @@ Configuracao e integracao:
 
 ```bash
 docker compose config -q
-docker compose up --build
-docker compose logs -f langfuse-web langfuse-worker
+docker compose up -d database
 ```
 
 Backend:
